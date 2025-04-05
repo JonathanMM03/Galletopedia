@@ -2,7 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Usuarios, TipoUsuario
-import forms
+from forms import formLogin, formRegistro
+from services.logger_service import log_user_action, log_error, log_security_event
+import logging
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth', static_folder='../static')
 
@@ -13,32 +15,29 @@ def login():
             return redirect(url_for('intranet'))
         return redirect(url_for('main.index'))
     
-    form = forms.formLogin(request.form)
-    if request.method == 'POST' and form.validate():
-        # Validar el captcha
-        if form.captcha.data != form.captcha_hidden.data:
-            return render_template('auth/login.html', form=form)
-            
-        correo_o_usuario = form.email.data
-        contraseña = form.password.data
-        
-        usuario = db.session.query(Usuarios).filter(
-            (Usuarios.email == correo_o_usuario) | 
-            (Usuarios.nombre == correo_o_usuario)
-        ).first()
-        
-        if usuario and check_password_hash(usuario.password_hash, contraseña):
-            # Verificar si la cuenta está activa
-            if usuario.estatus == 0:
-                return render_template('auth/login.html', form=form)
-                
+    form = formLogin()
+    if form.validate_on_submit():
+        usuario = Usuarios.query.filter_by(email=form.email.data).first()
+        if usuario and check_password_hash(usuario.password_hash, form.password.data):
             login_user(usuario)
+            
+            # Registrar inicio de sesión exitoso
+            log_user_action('login')(lambda: None)()
+            
+            # Registrar evento de seguridad
+            log_security_event('login_success', {'email': usuario.email})
+            
             session['clave'] = usuario.clave  # Establecer la clave en la sesión
             session['_user_type'] = usuario.tipo_usuario_id  # Establecer el tipo de usuario
             
             if usuario.tipo_usuario_id != 1:  # Si no es cliente (es staff o admin)
                 return redirect(url_for('intranet'))
             return redirect(url_for('main.index'))
+        else:
+            # Registrar intento fallido de inicio de sesión
+            log_security_event('login_failed', {'email': form.email.data})
+            
+            flash('Usuario o contraseña incorrectos.', 'danger')
     
     # Generar un nuevo captcha para el formulario
     import random
@@ -53,8 +52,8 @@ def registro():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
-    form = forms.formRegistro(request.form)
-    if request.method == 'POST' and form.validate():
+    form = formRegistro()
+    if form.validate_on_submit():
         # Validar el captcha
         captcha_input = form.captcha.data
         captcha_hidden = form.captcha_hidden.data
@@ -83,11 +82,20 @@ def registro():
         nuevo_usuario.set_password(password)
         
         try:
+            # Registrar la acción
+            log_user_action('register')(lambda: None)()
+            
+            # Registrar evento de seguridad
+            log_security_event('user_created', {'email': nuevo_usuario.email})
+            
             db.session.add(nuevo_usuario)
             db.session.commit()
             flash('¡Registro exitoso! Por favor inicia sesión.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
+            # Registrar el error
+            log_error('database')(lambda: None)()
+            
             db.session.rollback()
             flash('Error al registrar el usuario. Por favor, intente nuevamente.', 'error')
             return redirect(url_for('auth.registro'))
@@ -98,6 +106,12 @@ def registro():
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    # Registrar cierre de sesión
+    log_user_action('logout')(lambda: None)()
+    
+    # Registrar evento de seguridad
+    log_security_event('logout', {'email': current_user.email})
+    
     logout_user()
     flash('Has cerrado sesión exitosamente.', 'success')
     return redirect(url_for('auth.login'))

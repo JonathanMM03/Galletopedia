@@ -17,6 +17,8 @@ from cliente.routes import cliente_bp
 from informe import informe_bp
 from ventas.routes import ventas_bp
 from functools import wraps
+import logging
+from services.logger_service import log_user_action, log_error, log_security_event, log_performance
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
@@ -42,6 +44,23 @@ login_manager.login_message_category = 'warning'
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(Usuarios, int(user_id))
+
+# Middleware para registrar todas las peticiones
+@app.before_request
+def before_request():
+    if current_user.is_authenticated:
+        # Registrar la petición
+        logger = logging.getLogger('don_galleto')
+        logger.info(f"REQUEST - User: {current_user.email} - Endpoint: {request.endpoint} - Method: {request.method} - IP: {request.remote_addr}")
+
+# Middleware para registrar todas las respuestas
+@app.after_request
+def after_request(response):
+    if current_user.is_authenticated:
+        # Registrar la respuesta
+        logger = logging.getLogger('don_galleto')
+        logger.info(f"RESPONSE - User: {current_user.email} - Endpoint: {request.endpoint} - Method: {request.method} - Status: {response.status_code}")
+    return response
 
 # El decorador rol_requerido se ha movido a decorators.py
 
@@ -136,6 +155,15 @@ def intranet():
         flash('No tienes permiso para acceder a la intranet.', 'error')
         return redirect(url_for('index'))
     return render_template("layoutIntranet.html", usuario=usuario)
+
+# Manejador de errores
+@app.errorhandler(Exception)
+def handle_error(error):
+    # Registrar el error
+    log_error('unhandled')(lambda: None)()
+    
+    # Devolver una respuesta de error
+    return render_template('error.html', error=error), 500
 
 if __name__ == "__main__":
     with app.app_context():

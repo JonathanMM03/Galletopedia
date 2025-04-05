@@ -236,7 +236,6 @@ class MermaInsumos(db.Model):
     cantidad_danada = db.Column(db.Float, nullable=False)
     motivo_merma = db.Column(db.String(255))
     insumo_id = db.Column(db.Integer, db.ForeignKey('administracion_insumos.id'), nullable=False)
-    fecha_registro = db.Column(db.DateTime, default=datetime.now)
 
     insumo = db.relationship('AdministracionInsumos', backref='mermas')
 

@@ -4,6 +4,6 @@
 /__pycache__
 **/__pycache__/
 /legacy
-
+logs/
 
 config.py

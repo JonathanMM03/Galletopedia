@@ -19,11 +19,15 @@ from flask_login import login_required, current_user
 import uuid
 import re
 from decorators import rol_requerido
+from services.logger_service import log_user_action, log_error, log_performance
 
 @inventario_bp.route('/')
 @login_required
 @rol_requerido(1, 2)  # Admin y Producción
 def index():
+    # Registrar acceso a la página de inventario
+    log_user_action('view_inventory')(lambda: None)()
+    
     print("\n=== INICIO index ===")
     # Obtener todos los tipos de insumo con sus totales
     totales_por_tipo = u.calcular_totales_por_tipo()
@@ -1346,3 +1350,41 @@ def insumos_por_tipo(tipo_id):
             'success': False,
             'message': f'Error al obtener los insumos: {str(e)}'
         }), 500
+
+@inventario_bp.route('/registrar-merma/<int:insumo_id>', methods=['GET', 'POST'])
+@login_required
+def registrar_merma(insumo_id):
+    insumo = AdministracionInsumos.query.get_or_404(insumo_id)
+    form = MermaInsumoForm()
+    form.insumo_id.data = insumo_id
+    
+    if form.validate_on_submit():
+        try:
+            # Crear nueva merma sin el campo fecha_registro
+            nueva_merma = MermaInsumos(
+                insumo_id=form.insumo_id.data,
+                cantidad_danada=form.cantidad_danada.data,
+                motivo_merma=form.motivo_merma.data
+            )
+            
+            # Actualizar cantidad existente del insumo
+            insumo.cantidad_existente -= form.cantidad_danada.data
+            
+            # Registrar la acción
+            log_user_action('merma_registrada')(lambda: None)()
+            
+            db.session.add(nueva_merma)
+            db.session.commit()
+            
+            flash('Merma registrada exitosamente.', 'success')
+            return redirect(url_for('inventario.gestion_insumos'))
+            
+        except Exception as e:
+            # Registrar el error
+            log_error('database')(lambda: None)()
+            
+            db.session.rollback()
+            flash('Error al registrar la merma. Por favor, intente nuevamente.', 'error')
+            return redirect(url_for('inventario.gestion_insumos'))
+    
+    return render_template('inventario/registrar_merma.html', form=form, insumo=insumo)
