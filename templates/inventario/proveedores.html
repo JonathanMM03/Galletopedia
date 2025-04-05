@@ -1,0 +1,188 @@
+{% extends "layoutIntranet.html" %}
+
+{% block title %}Gestión de Proveedores{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestión de Proveedores</h2>
+    
+    <!-- Botones de acción -->
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoProveedorModal">
+            <i class="fas fa-plus"></i> Nuevo Proveedor
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-8">
+                    <label for="filtro_nombre" class="form-label">Nombre del Proveedor</label>
+                    <input type="text" class="form-control" id="filtro_nombre" name="filtro_nombre" value="{{ filtro_nombre }}" placeholder="Buscar por nombre...">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{{ url_for('inventario.proveedores') }}" class="btn btn-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de proveedores -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre de la Empresa</th>
+                    <th>Nombre del Promotor</th>
+                    <th>Teléfono</th>
+                    <th>Correo Electrónico</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proveedor in proveedores %}
+                <tr>
+                    <td>{{ proveedor.id }}</td>
+                    <td>{{ proveedor.nombre_empresa }}</td>
+                    <td>{{ proveedor.nombre_promotor }}</td>
+                    <td>{{ proveedor.telefono }}</td>
+                    <td>{{ proveedor.correo_electronico }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editarProveedor({{ proveedor.id }})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarProveedor({{ proveedor.id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay proveedores registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('inventario.proveedores', page=pagination.prev_num, filtro_nombre=filtro_nombre) }}">Anterior</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('inventario.proveedores', page=page_num, filtro_nombre=filtro_nombre) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('inventario.proveedores', page=pagination.next_num, filtro_nombre=filtro_nombre) }}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Modal Nuevo Proveedor -->
+    <div class="modal fade" id="nuevoProveedorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevoProveedor" method="POST">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="nombre_empresa" class="form-label">Nombre de la Empresa</label>
+                            {{ form.nombre_empresa(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre_promotor" class="form-label">Nombre del Promotor</label>
+                            {{ form.nombre_promotor(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            {{ form.telefono(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="correo_electronico" class="form-label">Correo Electrónico</label>
+                            {{ form.correo_electronico(class="form-control") }}
+                        </div>
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejo del formulario de nuevo proveedor
+    const formNuevoProveedor = document.getElementById('formNuevoProveedor');
+    formNuevoProveedor.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(formNuevoProveedor);
+        
+        fetch("{{ url_for('inventario.proveedores') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al procesar la solicitud');
+        });
+    });
+});
+
+function editarProveedor(id) {
+    window.location.href = "{{ url_for('inventario.editar_proveedor', id=0) }}".replace('0', id);
+}
+
+function eliminarProveedor(id) {
+    if (confirm('¿Está seguro de que desea eliminar este proveedor?')) {
+        // Implementar la lógica de eliminación
+        console.log('Eliminar proveedor:', id);
+    }
+}
+</script>
+{% endblock %} 

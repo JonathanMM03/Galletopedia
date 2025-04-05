@@ -1,0 +1,269 @@
+{% extends "layoutIntranet.html" %}
+
+{% block title %}Gestión de Insumos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestión de Insumos</h2>
+    
+    <!-- Botones de acción -->
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoInsumoModal">
+            <i class="fas fa-plus"></i> Nuevo Insumo
+        </button>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevaCategoriaModal">
+            <i class="fas fa-folder-plus"></i> Nueva Categoría
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="filtro_nombre" class="form-label">Nombre del Insumo</label>
+                    <input type="text" class="form-control" id="filtro_nombre" name="filtro_nombre" value="{{ filtro_nombre }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="filtro_categoria" class="form-label">Categoría</label>
+                    <select class="form-select" id="filtro_categoria" name="filtro_categoria">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.nombre }}" {% if filtro_categoria == categoria.nombre %}selected{% endif %}>
+                            {{ categoria.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{{ url_for('inventario.gestion_insumos') }}" class="btn btn-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de insumos -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Proveedor</th>
+                    <th>Precio</th>
+                    <th>Unidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for insumo, tipo, rel_proveedor, proveedor in insumos %}
+                <tr>
+                    <td>{{ insumo.id }}</td>
+                    <td>{{ insumo.insumo_nombre }}</td>
+                    <td>{{ tipo.nombre }}</td>
+                    <td>{{ proveedor.nombre_empresa if proveedor else 'No asignado' }}</td>
+                    <td>{{ "%.2f"|format(rel_proveedor.precio) if rel_proveedor else 'N/A' }}</td>
+                    <td>{{ insumo.unidad }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editarInsumo({{ insumo.id }})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarInsumo({{ insumo.id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('inventario.gestion_insumos', page=pagination.prev_num, filtro_nombre=filtro_nombre, filtro_categoria=filtro_categoria) }}">Anterior</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('inventario.gestion_insumos', page=page_num, filtro_nombre=filtro_nombre, filtro_categoria=filtro_categoria) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('inventario.gestion_insumos', page=pagination.next_num, filtro_nombre=filtro_nombre, filtro_categoria=filtro_categoria) }}">Siguiente</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Modal Nuevo Insumo -->
+    <div class="modal fade" id="nuevoInsumoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nuevo Insumo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevoInsumo" method="POST">
+                        <input type="hidden" name="form_type" value="insumo">
+                        {{ form_insumo.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="categoria_id" class="form-label">Categoría</label>
+                            {{ form_insumo.categoria_id(class="form-select") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre del Insumo</label>
+                            {{ form_insumo.nombre(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="proveedor_id" class="form-label">Proveedor</label>
+                            {{ form_insumo.proveedor_id(class="form-select") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="precio" class="form-label">Precio</label>
+                            {{ form_insumo.precio(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="unidad_medida" class="form-label">Unidad de Medida</label>
+                            {{ form_insumo.unidad_medida(class="form-control") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fecha_caducidad" class="form-label">Fecha de Caducidad</label>
+                            {{ form_insumo.fecha_caducidad(class="form-control", type="date") }}
+                        </div>
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Categoría -->
+    <div class="modal fade" id="nuevaCategoriaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nueva Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevaCategoria" method="POST">
+                        <input type="hidden" name="form_type" value="categoria">
+                        {{ form_categoria.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre de la Categoría</label>
+                            {{ form_categoria.nombre(class="form-control") }}
+                        </div>
+
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejo del formulario de nuevo insumo
+    const formNuevoInsumo = document.getElementById('formNuevoInsumo');
+    formNuevoInsumo.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(formNuevoInsumo);
+        
+        fetch("{{ url_for('inventario.gestion_insumos') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al procesar la solicitud');
+        });
+    });
+
+    // Manejo del formulario de nueva categoría
+    const formNuevaCategoria = document.getElementById('formNuevaCategoria');
+    formNuevaCategoria.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(formNuevaCategoria);
+        
+        fetch("{{ url_for('inventario.gestion_insumos') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al procesar la solicitud');
+        });
+    });
+});
+
+function editarInsumo(id) {
+    window.location.href = "{{ url_for('inventario.editar_insumo', id=0) }}".replace('0', id);
+}
+
+function eliminarInsumo(id) {
+    if (confirm('¿Está seguro de que desea eliminar este insumo?')) {
+        // Implementar la lógica de eliminación
+        console.log('Eliminar insumo:', id);
+    }
+}
+</script>
+{% endblock %} 

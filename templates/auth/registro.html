@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<main class="flex-grow-1 d-flex justify-content-center align-items-center">
+    <div class="card p-4 shadow-lg" style="width: 400px;">
+        <h3 class="text-center mb-4">Registro de Usuario</h3>
+        
+        <form action="{{ url_for('auth.registro') }}" method="POST" id="registroForm">
+            {{ form.hidden_tag() }}
+
+            <!-- Nombre -->
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                {{ form.nombre(class="form-control", id="nombre", required=true) }}
+                {% for error in form.nombre.errors %}
+                    <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                {{ form.email(class="form-control", id="email", required=true) }}
+                {% for error in form.email.errors %}
+                    <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <!-- Contraseña -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                {{ form.password(class="form-control", id="password", required=true) }}
+                {% for error in form.password.errors %}
+                    <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <!-- Captcha -->
+            <div class="mb-3">
+                <label for="captcha" class="form-label">Captcha</label>
+                <div class="d-flex align-items-center">
+                    <div class="captcha-container bg-light p-2 rounded me-2" id="captchaContainer" style="min-width: 120px; text-align: center; font-family: monospace; font-weight: bold; letter-spacing: 2px;"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshCaptcha">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+                {{ form.captcha(class="form-control mt-2", id="captcha", required=true, placeholder="Ingrese el código captcha") }}
+                {{ form.captcha_hidden(id="captchaHidden") }}
+                {% for error in form.captcha.errors %}
+                    <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <!-- Botón de Registro -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success w-100">Registrarse</button>
+            </div>
+
+            <!-- Link a Login -->
+            <div class="text-center mt-3">
+                <small>¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión aquí</a></small>
+            </div>
+        </form>
+
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-3" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</main>
+
+{% block scripts %}
+<script>
+    // Función para generar un captcha aleatorio de 8 caracteres
+    function generateCaptcha() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let captcha = '';
+        for (let i = 0; i < 8; i++) {
+            captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return captcha;
+    }
+
+    // Función para mostrar el captcha en el contenedor
+    function displayCaptcha() {
+        const captcha = generateCaptcha();
+        document.getElementById('captchaContainer').textContent = captcha;
+        document.getElementById('captchaHidden').value = captcha;
+    }
+
+    // Función para validar el captcha antes de enviar el formulario
+    function validateCaptcha() {
+        const captchaInput = document.getElementById('captcha').value;
+        const captchaHidden = document.getElementById('captchaHidden').value;
+        
+        if (captchaInput !== captchaHidden) {
+            alert('El código captcha no coincide. Por favor, intente nuevamente.');
+            displayCaptcha(); // Generar un nuevo captcha
+            document.getElementById('captcha').value = ''; // Limpiar el campo de entrada
+            return false;
+        }
+        return true;
+    }
+
+    // Inicializar el captcha cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+        displayCaptcha();
+        
+        // Agregar evento al botón de refrescar captcha
+        document.getElementById('refreshCaptcha').addEventListener('click', displayCaptcha);
+        
+        // Agregar validación al formulario
+        document.getElementById('registroForm').addEventListener('submit', function(event) {
+            if (!validateCaptcha()) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 

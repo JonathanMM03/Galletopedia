@@ -1,0 +1,493 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .print-only {
+            display: block !important;
+        }
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .navbar, footer {
+            display: none !important;
+        }
+    }
+    .print-only {
+        display: none;
+    }
+    .print-header {
+        display: none;
+    }
+    @media print {
+        .print-header {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .print-logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+    }
+    .btn-download {
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Corte de Ventas</h2>
+        <div class="no-print">
+            <button type="button" class="btn btn-primary" onclick="mostrarModalConfirmacion()">Generar Corte</button>
+        </div>
+    </div>
+
+    <!-- Encabezado para impresión -->
+    <div class="print-header">
+        <img src="{{ url_for('static', filename='img/logo.jpeg') }}" alt="Logo Don Galleto" class="print-logo">
+        <h2>Corte de Ventas</h2>
+        <p id="print-periodo"></p>
+    </div>
+
+    <div class="card-body">
+        <form method="POST" class="mb-4">
+            {{ form.csrf_token }}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="fecha_inicio">Fecha Inicial</label>
+                        <div class="input-group">
+                            {{ form.fecha_inicio(class="form-control", type="date", id="fecha_inicio") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="fecha_fin">Fecha Final</label>
+                        <div class="input-group">
+                            {{ form.fecha_fin(class="form-control", type="date", id="fecha_fin") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="efectivo_caja">Efectivo en Caja</label>
+                        {{ form.efectivo_caja(class="form-control", type="number", step="0.01", id="efectivo_caja") }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="observaciones">Observaciones</label>
+                        {{ form.observaciones(class="form-control", id="observaciones") }}
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary" name="buscar" id="buscar">Buscar Ventas</button>
+                    <button type="submit" class="btn btn-success" name="procesar" id="procesar" style="display:none;">Realizar Corte</button>
+                </div>
+            </div>
+        </form>
+
+        <button type="button" class="btn btn-danger" id="descargar-pdf">
+            <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+            </button>
+        <button type="button" class="btn btn-success" id="descargar-excel">
+            <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+            </button>
+            
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Ventas</h5>
+                        <p class="card-text" id="total-ventas">${{ "%.2f"|format(ventas_periodo) }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Número de Ventas</h5>
+                        <p class="card-text" id="num-ventas">{{ num_ventas }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Productos</h5>
+                        <p class="card-text" id="total-productos">{{ total_productos }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Período Seleccionado</h5>
+                        <p class="card-text" id="periodo-seleccionado"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h3>Últimas Ventas del Período</h3>
+        <table class="table" id="tabla-ventas">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Descuento</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in ultimas_ventas %}
+                <tr>
+                    <td>{{ venta.id }}</td>
+                    <td>{{ venta.fecha_venta.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>${{ "%.2f"|format(venta.total_venta) }}</td>
+                    <td>${{ "%.2f"|format(venta.descuento_aplicado) }}</td>
+                    <td>{{ venta.nombre_usuario }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Botones de descarga -->
+<div class="container mt-4 mb-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Descargar Reporte</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-danger" id="descargar-pdf">
+                    <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                </button>
+                <button type="button" class="btn btn-success" id="descargar-excel">
+                    <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+                </button>
+                <button type="button" class="btn btn-info" id="descargar-csv">
+                    <i class="bi bi-file-earmark-text"></i> Descargar CSV
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmacionLabel">Confirmar Corte de Ventas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    Por favor, revise la siguiente información antes de confirmar el corte de ventas.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Información del Corte</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Período:</strong> <span id="periodoInfo"></span></li>
+                            <li><strong>Total Ventas:</strong> $<span id="totalVentasInfo"></span></li>
+                            <li><strong>Número de Ventas:</strong> <span id="numVentasInfo"></span></li>
+                            <li><strong>Total Productos:</strong> <span id="totalProductosInfo"></span></li>
+                            <li><strong>Efectivo en Caja:</strong> $<span id="efectivoCajaInfo"></span></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Resumen de Actividad</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Fecha Inicio:</strong> <span id="fechaInicioInfo"></span></li>
+                            <li><strong>Fecha Fin:</strong> <span id="fechaFinInfo"></span></li>
+                            <li><strong>Observaciones:</strong> <span id="observacionesInfo"></span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="diferenciaAlert" class="alert alert-warning mt-3" style="display: none;">
+                    <strong>¡Atención!</strong> Hay una diferencia entre el efectivo declarado y el total de ventas.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarCorte()">Confirmar Corte</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Bibliotecas para generar PDF y Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Establecer valores predeterminados para los campos de fecha
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    // Para fecha_inicio, establecer el primer día del mes actual
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
+    
+    // Establecer valores diferentes para cada campo
+    $('#fecha_inicio').val(firstDayStr);
+    $('#fecha_fin').val(todayStr);
+    
+    // Actualizar el período en la vista de impresión
+    actualizarPeriodoImpresion();
+    
+    // Función para descargar en PDF
+    $('#descargar-pdf').on('click', function() {
+        // Obtener las fechas seleccionadas
+        var fechaInicio = $('#fecha_inicio').val();
+        var fechaFin = $('#fecha_fin').val();
+        
+        // Crear un nuevo documento PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Título del informe
+        doc.setFontSize(18);
+        doc.text('Corte de Ventas', 14, 20);
+        doc.setFontSize(14);
+        doc.text(`Período: ${fechaInicio} al ${fechaFin}`, 14, 30);
+        
+        // Información general
+        doc.setFontSize(12);
+        doc.text(`Total Ventas: $${$('#total-ventas').text()}`, 14, 40);
+        doc.text(`Número de Ventas: ${$('#num-ventas').text()}`, 14, 50);
+        doc.text(`Total Productos: ${$('#total-productos').text()}`, 14, 60);
+        
+        // Tabla de ventas
+        const table = document.getElementById('tabla-ventas');
+        const rows = table.querySelectorAll('tr');
+        
+        const tableData = [];
+        const headers = [];
+        
+        // Obtener encabezados
+        rows[0].querySelectorAll('th').forEach(header => {
+            headers.push(header.textContent);
+        });
+        
+        // Obtener datos
+        for (let i = 1; i < rows.length; i++) {
+            const rowData = [];
+            rows[i].querySelectorAll('td').forEach(cell => {
+                rowData.push(cell.textContent);
+            });
+            tableData.push(rowData);
+        }
+        
+        // Agregar tabla al PDF
+        doc.autoTable({
+            head: [headers],
+            body: tableData,
+            startY: 70,
+            theme: 'grid',
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [66, 139, 202] }
+        });
+        
+        // Guardar el PDF
+        doc.save(`corte_ventas_${fechaInicio}_${fechaFin}.pdf`);
+    });
+
+    // Función para descargar en Excel
+    $('#descargar-excel').on('click', function() {
+        // Obtener las fechas seleccionadas
+        var fechaInicio = $('#fecha_inicio').val();
+        var fechaFin = $('#fecha_fin').val();
+        
+        // Crear un nuevo libro de Excel
+        const wb = XLSX.utils.book_new();
+        
+        // Obtener datos de la tabla
+        const table = document.getElementById('tabla-ventas');
+        const rows = table.querySelectorAll('tr');
+        
+        const tableData = [];
+        
+        // Obtener encabezados y datos
+        rows.forEach(row => {
+            const rowData = [];
+            row.querySelectorAll('th, td').forEach(cell => {
+                rowData.push(cell.textContent);
+            });
+            tableData.push(rowData);
+        });
+        
+        // Agregar información general
+        const infoGeneral = [
+            ['Corte de Ventas'],
+            [`Período: ${fechaInicio} al ${fechaFin}`],
+            [''],
+            ['Total Ventas', $('#total-ventas').text()],
+            ['Número de Ventas', $('#num-ventas').text()],
+            ['Total Productos', $('#total-productos').text()],
+            ['']
+        ];
+        
+        // Combinar información general con datos de la tabla
+        const allData = [...infoGeneral, ...tableData];
+        
+        // Crear una hoja de cálculo
+        const ws = XLSX.utils.aoa_to_sheet(allData);
+        
+        // Agregar la hoja al libro
+        XLSX.utils.book_append_sheet(wb, ws, 'Corte de Ventas');
+        
+        // Guardar el archivo Excel
+        XLSX.writeFile(wb, `corte_ventas_${fechaInicio}_${fechaFin}.xlsx`);
+    });
+    
+    // Función para descargar en CSV
+    $('#descargar-csv').on('click', function() {
+        // Obtener las fechas seleccionadas
+        var fechaInicio = $('#fecha_inicio').val();
+        var fechaFin = $('#fecha_fin').val();
+        
+        // Obtener datos de la tabla
+        const table = document.getElementById('tabla-ventas');
+        const rows = table.querySelectorAll('tr');
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        
+        // Agregar información general
+        csvContent += "Corte de Ventas\n";
+        csvContent += `Período: ${fechaInicio} al ${fechaFin}\n\n`;
+        csvContent += `Total Ventas,${$('#total-ventas').text()}\n`;
+        csvContent += `Número de Ventas,${$('#num-ventas').text()}\n`;
+        csvContent += `Total Productos,${$('#total-productos').text()}\n\n`;
+        
+        // Agregar encabezados
+        const headers = [];
+        rows[0].querySelectorAll('th').forEach(header => {
+            headers.push(header.textContent);
+        });
+        csvContent += headers.join(",") + "\n";
+        
+        // Agregar datos
+        for (let i = 1; i < rows.length; i++) {
+            const rowData = [];
+            rows[i].querySelectorAll('td').forEach(cell => {
+                // Escapar comas y comillas en el contenido
+                let content = cell.textContent.replace(/"/g, '""');
+                if (content.includes(',') || content.includes('"') || content.includes('\n')) {
+                    content = `"${content}"`;
+                }
+                rowData.push(content);
+            });
+            csvContent += rowData.join(",") + "\n";
+        }
+        
+        // Crear enlace de descarga
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `corte_ventas_${fechaInicio}_${fechaFin}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+});
+
+function actualizarPeriodoImpresion() {
+    const fechaInicio = $('#fecha_inicio').val();
+    const fechaFin = $('#fecha_fin').val();
+    $('#print-periodo').text(`Período: ${fechaInicio} al ${fechaFin}`);
+    
+    // Formatear fechas para mostrar en el período seleccionado
+    const fechaInicioFormateada = formatearFecha(fechaInicio);
+    const fechaFinFormateada = formatearFecha(fechaFin);
+    $('#periodo-seleccionado').text(`${fechaInicioFormateada} - ${fechaFinFormateada}`);
+}
+
+function formatearFecha(fecha) {
+    const partes = fecha.split('-');
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function mostrarModalConfirmacion() {
+    // Obtener valores del formulario
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    const efectivoCaja = parseFloat(document.getElementById('efectivo_caja').value) || 0;
+    const observaciones = document.getElementById('observaciones').value;
+    
+    // Obtener valores de las estadísticas
+    const totalVentas = parseFloat($('#total-ventas').text().replace('$', ''));
+    const numVentas = $('#num-ventas').text();
+    const totalProductos = $('#total-productos').text();
+
+    // Actualizar información en el modal
+    document.getElementById('periodoInfo').textContent = `${fechaInicio} al ${fechaFin}`;
+    document.getElementById('totalVentasInfo').textContent = totalVentas.toFixed(2);
+    document.getElementById('numVentasInfo').textContent = numVentas;
+    document.getElementById('totalProductosInfo').textContent = totalProductos;
+    document.getElementById('efectivoCajaInfo').textContent = efectivoCaja.toFixed(2);
+    document.getElementById('fechaInicioInfo').textContent = fechaInicio;
+    document.getElementById('fechaFinInfo').textContent = fechaFin;
+    document.getElementById('observacionesInfo').textContent = observaciones || 'Ninguna';
+
+    // Verificar diferencia entre efectivo y ventas
+    const diferencia = Math.abs(efectivoCaja - totalVentas);
+    const diferenciaAlert = document.getElementById('diferenciaAlert');
+    if (diferencia > 0.01) {
+        diferenciaAlert.style.display = 'block';
+    } else {
+        diferenciaAlert.style.display = 'none';
+    }
+
+    // Mostrar el modal usando Bootstrap 5
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+    modal.show();
+}
+
+function confirmarCorte() {
+    // Cerrar el modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion'));
+    modal.hide();
+    
+    // Mostrar el botón de procesar y hacer clic en él
+    $('button[name="procesar"]').show().click();
+}
+</script>
+{% endblock %} 
