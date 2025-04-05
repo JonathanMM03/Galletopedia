@@ -196,89 +196,79 @@ def index():
         print(f"Eficiencia: {eficiencia}%")
         
         # Obtener datos para el gráfico de ingresos diarios (últimos 30 días)
-    fecha_fin = datetime.now()
-    fecha_inicio = fecha_fin - timedelta(days=30)
+        fecha_fin = datetime.now()
+        fecha_inicio = fecha_fin - timedelta(days=30)
         print(f"Rango de fechas para ventas diarias: {fecha_inicio} a {fecha_fin}")
-    
-    ventas_diarias = db.session.query(
-        func.date(InformeVentas.fecha_venta).label('fecha'),
-        func.sum(InformeVentas.total_venta).label('total')
-    ).filter(
-        InformeVentas.fecha_venta.between(fecha_inicio, fecha_fin)
-    ).group_by(
+        
+        ventas_diarias = db.session.query(
+            func.date(InformeVentas.fecha_venta).label('fecha'),
+            func.sum(InformeVentas.total_venta).label('total')
+        ).filter(
+            InformeVentas.fecha_venta.between(fecha_inicio, fecha_fin)
+        ).group_by(
             func.date(InformeVentas.fecha_venta)
         ).order_by(
-        func.date(InformeVentas.fecha_venta)
-    ).all()
-    
+            func.date(InformeVentas.fecha_venta)
+        ).all()
+        
         fechas = [venta.fecha.strftime('%Y-%m-%d') for venta in ventas_diarias]
         totales = [float(venta.total) for venta in ventas_diarias]
         print(f"Ventas diarias - Fechas: {fechas}")
         print(f"Ventas diarias - Totales: {totales}")
         
         # Obtener datos para el gráfico de galletas más vendidas
-    galletas_vendidas = db.session.query(
-        Recetas.nombre,
+        galletas_vendidas = db.session.query(
+            Recetas.nombre,
             func.sum(DetalleVenta.cantidad).label('cantidad_total')
         ).join(DetalleVenta, Recetas.id == DetalleVenta.receta_id
         ).join(InformeVentas, DetalleVenta.venta_id == InformeVentas.id
-    ).filter(
+        ).filter(
             InformeVentas.fecha_venta >= primer_dia_mes
-    ).group_by(
+        ).group_by(
             Recetas.id
-    ).order_by(
-        func.sum(DetalleVenta.cantidad).desc()
-    ).limit(5).all()
-    
+        ).order_by(
+            func.sum(DetalleVenta.cantidad).desc()
+        ).limit(5).all()
+        
         galletas_vendidas_nombres = [g.nombre for g in galletas_vendidas]
         galletas_vendidas_cantidades = [int(g.cantidad_total) for g in galletas_vendidas]
         print(f"Galletas más vendidas - Nombres: {galletas_vendidas_nombres}")
         print(f"Galletas más vendidas - Cantidades: {galletas_vendidas_cantidades}")
         
         # Obtener datos para el gráfico de galletas más producidas
-    galletas_producidas = db.session.query(
-        Recetas.nombre,
+        galletas_producidas = db.session.query(
+            Recetas.nombre,
             func.sum(InformeProduccion.cantidad_producida).label('cantidad_total')
         ).join(InformeProduccion, Recetas.id == InformeProduccion.receta_id
-    ).filter(
+        ).filter(
             InformeProduccion.fecha_produccion >= primer_dia_mes
-    ).group_by(
+        ).group_by(
             Recetas.id
-    ).order_by(
-        func.sum(InformeProduccion.cantidad_producida).desc()
-    ).limit(5).all()
-    
-    galletas_producidas_nombres = [g.nombre for g in galletas_producidas]
+        ).order_by(
+            func.sum(InformeProduccion.cantidad_producida).desc()
+        ).limit(5).all()
+        
+        galletas_producidas_nombres = [g.nombre for g in galletas_producidas]
         galletas_producidas_cantidades = [int(g.cantidad_total) for g in galletas_producidas]
         print(f"Galletas más producidas - Nombres: {galletas_producidas_nombres}")
         print(f"Galletas más producidas - Cantidades: {galletas_producidas_cantidades}")
-    
-    return render_template('ventas/index.html',
-            total_ventas_mes=total_ventas_mes,
-            total_galletas_mes=total_galletas_mes,
-            total_galletas_producidas_mes=total_galletas_producidas_mes,
-            eficiencia=eficiencia,
-                          fechas=fechas,
-                          totales=totales,
-                          galletas_vendidas_nombres=galletas_vendidas_nombres,
-                          galletas_vendidas_cantidades=galletas_vendidas_cantidades,
-                          galletas_producidas_nombres=galletas_producidas_nombres,
-            galletas_producidas_cantidades=galletas_producidas_cantidades
-        )
+        
+        return render_template('ventas/index.html',
+                             total_ventas_mes=total_ventas_mes,
+                             total_galletas_mes=total_galletas_mes,
+                             total_galletas_producidas_mes=total_galletas_producidas_mes,
+                             eficiencia=eficiencia,
+                             fechas=fechas,
+                             totales=totales,
+                             galletas_vendidas_nombres=galletas_vendidas_nombres,
+                             galletas_vendidas_cantidades=galletas_vendidas_cantidades,
+                             galletas_producidas_nombres=galletas_producidas_nombres,
+                             galletas_producidas_cantidades=galletas_producidas_cantidades
+                         )
     except Exception as e:
         print(f"Error en index de ventas: {str(e)}")
-        return render_template('ventas/index.html',
-            total_ventas_mes=0,
-            total_galletas_mes=0,
-            total_galletas_producidas_mes=0,
-            eficiencia=0,
-            fechas=[],
-            totales=[],
-            galletas_vendidas_nombres=[],
-            galletas_vendidas_cantidades=[],
-            galletas_producidas_nombres=[],
-            galletas_producidas_cantidades=[]
-        )
+        flash('Error al cargar los datos de ventas', 'danger')
+        return redirect(url_for('main.index'))
 
 @ventas_bp.route('/nueva', methods=['GET', 'POST'])
 @login_required

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Usuarios, TipoUsuario
-from forms import formLogin, formRegistro
+from forms import formLogin, formRegistro, formCambiarPassword
 from services.logger_service import log_user_action, log_error, log_security_event
 import logging
 
@@ -17,6 +17,16 @@ def login():
     
     form = formLogin()
     if form.validate_on_submit():
+        # Validar el captcha
+        captcha_input = form.captcha.data
+        captcha_hidden = form.captcha_hidden.data
+        
+        if captcha_input != captcha_hidden:
+            # Registrar intento fallido de captcha
+            log_security_event('captcha_failed', {'email': form.email.data})
+            flash('El código captcha no coincide. Por favor, intente nuevamente.', 'error')
+            return redirect(url_for('auth.login'))
+            
         usuario = Usuarios.query.filter_by(email=form.email.data).first()
         if usuario and check_password_hash(usuario.password_hash, form.password.data):
             login_user(usuario)
@@ -59,7 +69,8 @@ def registro():
         captcha_hidden = form.captcha_hidden.data
         
         if captcha_input != captcha_hidden:
-            flash('El código captcha no coincide. Por favor, intente nuevamente.', 'error')
+            # Registrar intento fallido de captcha
+            log_security_event('captcha_failed', {'email': form.email.data})
             return redirect(url_for('auth.registro'))
             
         nombre = form.nombre.data
@@ -70,7 +81,6 @@ def registro():
         # Verificar si el usuario ya existe
         user = Usuarios.query.filter_by(email=email).first()
         if user:
-            flash('El correo electrónico ya está registrado.', 'error')
             return redirect(url_for('auth.registro'))
         
         # Crear nuevo usuario
@@ -90,18 +100,21 @@ def registro():
             
             db.session.add(nuevo_usuario)
             db.session.commit()
-            flash('¡Registro exitoso! Por favor inicia sesión.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             # Registrar el error
             log_error('database')(lambda: None)()
             
             db.session.rollback()
-            flash('Error al registrar el usuario. Por favor, intente nuevamente.', 'error')
             return redirect(url_for('auth.registro'))
     
-    tipos_usuario = TipoUsuario.query.all()
-    return render_template('auth/registro.html', form=form, tipos_usuario=tipos_usuario)
+    # Generar un nuevo captcha para el formulario
+    import random
+    import string
+    captcha = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    form.captcha_hidden.data = captcha
+    
+    return render_template('auth/registro.html', form=form)
 
 @auth_bp.route('/logout')
 @login_required
@@ -144,7 +157,7 @@ def eliminar_cuenta():
 @auth_bp.route('/detalles', methods=['GET', 'POST'])
 @login_required
 def detalles():
-    form = forms.formCambiarPassword(request.form)
+    form = formCambiarPassword(request.form)
     
     if request.method == 'POST' and form.validate():
         # Verificar la contraseña actual
