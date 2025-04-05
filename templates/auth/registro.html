@@ -39,7 +39,7 @@
             <div class="mb-3">
                 <label for="captcha" class="form-label">Captcha</label>
                 <div class="d-flex align-items-center">
-                    <div class="captcha-container bg-light p-2 rounded me-2" id="captchaContainer" style="min-width: 120px; text-align: center; font-family: monospace; font-weight: bold; letter-spacing: 2px;"></div>
+                    <div class="captcha-container bg-light p-2 rounded me-2" id="captchaContainer" style="min-width: 120px; text-align: center; font-family: monospace; font-weight: bold; letter-spacing: 2px;">{{ form.captcha_hidden.data }}</div>
                     <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshCaptcha">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
@@ -62,7 +62,7 @@
             </div>
         </form>
 
-        <!-- Mensajes Flash -->
+        <!-- Mensajes Flash 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -71,56 +71,34 @@
                     </div>
                 {% endfor %}
             {% endif %}
-        {% endwith %}
+        {% endwith %}-->
     </div>
 </main>
 
 {% block scripts %}
 <script>
-    // Función para generar un captcha aleatorio de 8 caracteres
-    function generateCaptcha() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let captcha = '';
-        for (let i = 0; i < 8; i++) {
-            captcha += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return captcha;
+    // Función para refrescar el captcha
+    function refreshCaptcha() {
+        // Hacer una petición AJAX para obtener un nuevo captcha
+        fetch("{{ url_for('auth.registro') }}")
+            .then(response => response.text())
+            .then(html => {
+                // Extraer el nuevo captcha del HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newCaptcha = doc.getElementById('captchaHidden').value;
+                
+                // Actualizar el captcha en la página
+                document.getElementById('captchaContainer').textContent = newCaptcha;
+                document.getElementById('captchaHidden').value = newCaptcha;
+                document.getElementById('captcha').value = ''; // Limpiar el campo de entrada
+            });
     }
 
-    // Función para mostrar el captcha en el contenedor
-    function displayCaptcha() {
-        const captcha = generateCaptcha();
-        document.getElementById('captchaContainer').textContent = captcha;
-        document.getElementById('captchaHidden').value = captcha;
-    }
-
-    // Función para validar el captcha antes de enviar el formulario
-    function validateCaptcha() {
-        const captchaInput = document.getElementById('captcha').value;
-        const captchaHidden = document.getElementById('captchaHidden').value;
-        
-        if (captchaInput !== captchaHidden) {
-            alert('El código captcha no coincide. Por favor, intente nuevamente.');
-            displayCaptcha(); // Generar un nuevo captcha
-            document.getElementById('captcha').value = ''; // Limpiar el campo de entrada
-            return false;
-        }
-        return true;
-    }
-
-    // Inicializar el captcha cuando se carga la página
+    // Inicializar cuando se carga la página
     document.addEventListener('DOMContentLoaded', function() {
-        displayCaptcha();
-        
         // Agregar evento al botón de refrescar captcha
-        document.getElementById('refreshCaptcha').addEventListener('click', displayCaptcha);
-        
-        // Agregar validación al formulario
-        document.getElementById('registroForm').addEventListener('submit', function(event) {
-            if (!validateCaptcha()) {
-                event.preventDefault();
-            }
-        });
+        document.getElementById('refreshCaptcha').addEventListener('click', refreshCaptcha);
     });
 </script>
 {% endblock %}

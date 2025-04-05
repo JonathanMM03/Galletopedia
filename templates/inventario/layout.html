@@ -47,6 +47,7 @@
                 <h1 class="h2">{% block title %}{% endblock %}</h1>
             </div>
 
+            <!-- Main content 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -56,7 +57,7 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-            {% endwith %}
+            {% endwith %}-->
 
             {% block inventory_content %}{% endblock %}
         </main>

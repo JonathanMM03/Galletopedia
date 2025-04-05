@@ -230,7 +230,7 @@ function verDetallesPedido(pedidoId) {
 
             const pedido = data.pedido;
             document.getElementById('clienteNombre').textContent = pedido.cliente;
-            document.getElementById('pedidoId').textContent = pedido.id;
+            document.getElementById('pedidoId').textContent = `N°${pedido.id}`;
             document.getElementById('recetaNombre').textContent = pedido.receta;
             document.getElementById('cantidad').textContent = pedido.cantidad;
             document.getElementById('precioUnitario').textContent = pedido.precio_unitario.toFixed(2);

@@ -738,20 +738,43 @@ def agregar_insumo_ajax():
             }), 400
         
         print("7. Creando nuevo insumo...")
-        # Crear el nuevo insumo
-        insumo = AdministracionInsumos(
+        # Crear nuevo insumo
+        # Generar lote automáticamente si no se proporciona
+        lote_id = data['lote_id']
+        if not lote_id:
+            # Obtener el último lote registrado
+            ultimo_insumo = AdministracionInsumos.query.order_by(
+                AdministracionInsumos.lote_id.desc()
+            ).first()
+
+            if ultimo_insumo and ultimo_insumo.lote_id:
+                # Si existe un lote previo, extraer el número y aumentarlo
+                try:
+                    ultimo_numero = int(ultimo_insumo.lote_id[1:])  # Quitar la 'L' y convertir a número
+                    siguiente_numero = ultimo_numero + 1
+                except ValueError:
+                    siguiente_numero = 1
+            else:
+                # Si no hay lotes previos, empezar desde 1
+                siguiente_numero = 1
+
+            # Formatear el nuevo número de lote (L001, L002, etc.)
+            lote_id = f"L{siguiente_numero:03d}"
+            print(f"Lote generado automáticamente: {lote_id}")
+        
+        nuevo_insumo = AdministracionInsumos(
             insumo_nombre=data['insumo_nombre'],
             tipo_insumo_id=data['tipo_insumo_id'],
             cantidad_existente=cantidad,
             unidad=data['unidad'],
-            lote_id=data['lote_id'],
-            fecha_registro=date.today(),
-            fecha_caducidad=fecha_caducidad
+            lote_id=lote_id,  # Usamos el lote_id generado o proporcionado
+            fecha_registro=datetime.now(),
+            fecha_caducidad=data['fecha_caducidad'] if data['fecha_caducidad'] else None
         )
-        print(f"Insumo a crear: {insumo.__dict__}")
+        print(f"Insumo a crear: {nuevo_insumo.__dict__}")
         
         print("8. Agregando insumo a la base de datos...")
-        db.session.add(insumo)
+        db.session.add(nuevo_insumo)
         print("9. Confirmando cambios en la base de datos...")
         db.session.commit()
         print("10. Insumo agregado exitosamente")
@@ -1118,14 +1141,37 @@ def gestion_insumos():
                 if form_insumo.validate_on_submit():
                     try:
                         # Crear nuevo insumo
+                        # Generar lote automáticamente si no se proporciona
+                        lote_id = form_insumo.lote_id.data
+                        if not lote_id:
+                            # Obtener el último lote registrado
+                            ultimo_insumo = AdministracionInsumos.query.order_by(
+                                AdministracionInsumos.lote_id.desc()
+                            ).first()
+
+                            if ultimo_insumo and ultimo_insumo.lote_id:
+                                # Si existe un lote previo, extraer el número y aumentarlo
+                                try:
+                                    ultimo_numero = int(ultimo_insumo.lote_id[1:])  # Quitar la 'L' y convertir a número
+                                    siguiente_numero = ultimo_numero + 1
+                                except ValueError:
+                                    siguiente_numero = 1
+                            else:
+                                # Si no hay lotes previos, empezar desde 1
+                                siguiente_numero = 1
+
+                            # Formatear el nuevo número de lote (L001, L002, etc.)
+                            lote_id = f"L{siguiente_numero:03d}"
+                            print(f"Lote generado automáticamente: {lote_id}")
+                        
                         nuevo_insumo = AdministracionInsumos(
                             insumo_nombre=form_insumo.nombre.data,
                             tipo_insumo_id=form_insumo.categoria_id.data,
                             cantidad_existente=form_insumo.cantidad.data,
-                            unidad=form_insumo.unidad_medida.data,  # Guardamos la unidad aquí
-                            lote_id=request.form.get('lote_id'),
+                            unidad=form_insumo.unidad_medida.data,
+                            lote_id=lote_id,
                             fecha_registro=datetime.now(),
-                            fecha_caducidad=form_insumo.fecha_caducidad.data
+                            fecha_caducidad=form_insumo.fecha_caducidad.data if form_insumo.fecha_caducidad.data else None
                         )
                         db.session.add(nuevo_insumo)
                         db.session.flush()  # Para obtener el ID del nuevo insumo
@@ -1136,7 +1182,7 @@ def gestion_insumos():
                             rel_proveedor = InsumoProveedor(
                                 insumo_id=nuevo_insumo.id,
                                 proveedor_id=form_insumo.proveedor_id.data,
-                                precio=form_insumo.precio.data,
+                                precio=form_insumo.precio_unitario.data,
                                 unidad=form_insumo.unidad_medida.data  # Agregamos la unidad aquí también
                             )
                             db.session.add(rel_proveedor)

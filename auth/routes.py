@@ -71,6 +71,7 @@ def registro():
         if captcha_input != captcha_hidden:
             # Registrar intento fallido de captcha
             log_security_event('captcha_failed', {'email': form.email.data})
+            flash('El código captcha no coincide. Por favor, intente nuevamente.', 'error')
             return redirect(url_for('auth.registro'))
             
         nombre = form.nombre.data
@@ -81,6 +82,7 @@ def registro():
         # Verificar si el usuario ya existe
         user = Usuarios.query.filter_by(email=email).first()
         if user:
+            flash('El correo electrónico ya está registrado.', 'error')
             return redirect(url_for('auth.registro'))
         
         # Crear nuevo usuario
@@ -100,12 +102,14 @@ def registro():
             
             db.session.add(nuevo_usuario)
             db.session.commit()
+            flash('¡Registro exitoso! Por favor inicia sesión.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             # Registrar el error
             log_error('database')(lambda: None)()
             
             db.session.rollback()
+            flash('Error al registrar el usuario. Por favor, intente nuevamente.', 'error')
             return redirect(url_for('auth.registro'))
     
     # Generar un nuevo captcha para el formulario

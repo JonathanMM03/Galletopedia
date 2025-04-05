@@ -21,6 +21,7 @@
             <table class="table align-middle m-0" id="tablaPedidos">
                 <thead class="bg-choco text-white">
                     <tr>
+                        <th>N° Pedido</th>
                         <th>Fecha Pedido</th>
                         <th>Nombre</th>
                         <th>Receta</th>
@@ -35,6 +36,7 @@
                     {% for pedido in pedidos %}
                     <tr class="pedido-row {% if pedido.estado_pedido == 'Cancelado' %}table-danger{% elif pedido.estado_pedido == 'Entregado' %}table-success{% endif %}" 
                         data-estado="{{ pedido.estatus }}">
+                        <td>N°{{ pedido.id }}</td>
                         <td>{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td>{{ pedido.nombre_usuario }}</td>
                         <td>{{ pedido.nombre_receta }}</td>

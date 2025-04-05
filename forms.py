@@ -258,7 +258,7 @@ class NuevoInsumoForm(FlaskForm):
         DataRequired(message='Debe seleccionar un proveedor')
     ])
     
-    precio = FloatField('Precio por Unidad', validators=[
+    precio_unitario = FloatField('Precio Unitario', validators=[
         DataRequired(message='El precio es requerido'),
         NumberRange(min=0.01, message='El precio debe ser mayor a 0')
     ])
@@ -268,18 +268,41 @@ class NuevoInsumoForm(FlaskForm):
         validators=[DataRequired(message='Debe seleccionar una unidad de medida')]
     )
     
-    cantidad = FloatField('Cantidad a Recibir', validators=[
+    cantidad = FloatField('Cantidad', validators=[
         DataRequired(message='La cantidad es requerida'),
         NumberRange(min=0.1, max=100, message='La cantidad debe estar entre 0.1 y 100')
     ])
     
-    fecha_caducidad = DateField('Fecha de Caducidad', validators=[
-        DataRequired(message='La fecha de caducidad es requerida')
+    lote_id = StringField('Lote', validators=[
+        Optional(),
+        Length(max=50, message='El lote no puede tener más de 50 caracteres')
+    ])
+    
+    fecha_caducidad = DateField('Fecha de Caducidad', 
+        format='%Y-%m-%d',
+        validators=[DataRequired(message='La fecha de caducidad es requerida')]
+    )
+    
+    total_pagar = FloatField('Total a Pagar', validators=[
+        DataRequired(message='El total es requerido'),
+        NumberRange(min=0.01, message='El total debe ser mayor a 0')
     ])
 
     def validate_fecha_caducidad(self, field):
         if field.data <= date.today():
             raise ValidationError('La fecha de caducidad debe ser posterior a hoy')
+
+    def validate_lote_id(self, field):
+        # Verificar si ya existe un lote con ese ID
+        lote_existente = AdministracionInsumos.query.filter_by(lote_id=field.data).first()
+        if lote_existente:
+            raise ValidationError('Ya existe un lote con ese ID')
+            
+    def validate_total_pagar(self, field):
+        # Calcular el total esperado
+        total_esperado = self.precio_unitario.data * self.cantidad.data
+        if abs(field.data - total_esperado) > 0.01:  # Permitimos una pequeña diferencia por redondeo
+            raise ValidationError(f'El total debe ser {total_esperado:.2f} (precio unitario * cantidad)')
 
 class AsignarProveedorInsumoForm(FlaskForm):
     proveedor_id = SelectField('Proveedor', coerce=int)

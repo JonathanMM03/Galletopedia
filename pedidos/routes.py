@@ -78,14 +78,6 @@ def registrar_venta(pedido):
 
 @pedidos_bp.route('/', methods=['GET', 'POST'])
 @login_required
-def index():
-    # Obtener todos los pedidos del usuario actual
-    pedidos = PedidoGalletasClientes.query.filter_by(
-        usuario_id=current_user.id
-    ).order_by(
-        PedidoGalletasClientes.fecha_pedido.desc()
-    ).all()
-    
 def pedidos():
     form = FlaskForm()
     usuario_id = session["_user_id"]
