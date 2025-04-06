@@ -9,7 +9,7 @@
             alt="Sin imagen" style="height: 200px; object-fit: cover;">
         {% endif %}
         
-        <div class="card-body">
+        <div class="card-body d-flex flex-column">
             <!-- Nombre -->
             <h5 class="card-title text-center">{{ product.nombre }}</h5>
             
@@ -18,23 +18,29 @@
                 <strong>${{ "%.2f"|format(product.precio_venta) }} MXN</strong>
             </p>
 
-            <!-- Botón para ver ingredientes -->
-            <div class="d-grid">
-                <button class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalIngredientes{{ product.id }}">
-                    Ver Ingredientes
-                </button>
-            </div>
+            <!-- Botones -->
+            <div class="mt-auto">
+                <div class="row g-2">
+                    <!-- Botón para ver ingredientes -->
+                    <div class="col-6">
+                        <button class="btn btn-outline-primary w-100" data-bs-toggle="modal"
+                            data-bs-target="#modalIngredientes{{ product.id }}">
+                            Ver Ingredientes
+                        </button>
+                    </div>
 
-            <form action="{{ url_for('main.pedir') }}" method="POST">
-                {{ form.hidden_tag() }}
-                <input type="hidden" name="receta_id" value="{{ product.id }}">
-                <button class="btn  btn-outline-primary" type="submit">Pedir</button>
-            </form>
+                    <div class="col-6">
+                        <form action="{{ url_for('main.pedir') }}" method="POST">
+                            {{ form.hidden_tag() }}
+                            <input type="hidden" name="receta_id" value="{{ product.id }}">
+                            <button class="btn btn-outline-primary w-100" type="submit">Pedir</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
-
 
     <!-- Modal de Ingredientes -->
     <div class="modal fade" id="modalIngredientes{{ product.id }}" tabindex="-1"

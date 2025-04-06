@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Seleccionar Insumo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Seleccionar Insumo para Editar</h2>
+    <p>Se encontraron múltiples registros para el insumo "{{ insumos[0].insumo_nombre }}". Por favor, seleccione el registro que desea editar:</p>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Lote</th>
+                    <th>Categoría</th>
+                    <th>Proveedor</th>
+                    <th>Precio</th>
+                    <th>Unidad</th>
+                    <th>Fecha Registro</th>
+                    <th>Fecha Caducidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for insumo in insumos %}
+                <tr>
+                    <td>{{ insumo.lote_id }}</td>
+                    <td>{{ insumo.tipo_insumo.nombre }}</td>
+                    <td>
+                        {% set rel_proveedor = insumo.relaciones_proveedor[0] if insumo.relaciones_proveedor else None %}
+                        {{ rel_proveedor.proveedor.nombre_empresa if rel_proveedor and rel_proveedor.proveedor else 'No asignado' }}
+                    </td>
+                    <td>{{ "%.2f"|format(rel_proveedor.precio) if rel_proveedor and rel_proveedor.precio else 'N/A' }}</td>
+                    <td>{{ insumo.unidad }}</td>
+                    <td>{{ insumo.fecha_registro.strftime('%Y-%m-%d') if insumo.fecha_registro else 'N/A' }}</td>
+                    <td>{{ insumo.fecha_caducidad.strftime('%Y-%m-%d') if insumo.fecha_caducidad else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('inventario.editar_insumo', nombre_insumo=insumo.insumo_nombre, lote_id=insumo.lote_id) }}" 
+                           class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('inventario.gestion_insumos') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+{% endblock %} 

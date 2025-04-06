@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Obtener datos de la categoría
-            fetch(`/inventario/insumos/tipo/${categoriaId}`)
+            fetch(`/inventario/insumos-stock?categoria=${categoriaId}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log('Datos recibidos:', data);
@@ -209,7 +209,7 @@ function verLotes(tipoId) {
     tbody.innerHTML = '<tr><td colspan="7" class="text-center">Cargando lotes...</td></tr>';
     
     // Realizar la petición AJAX para obtener los lotes
-    fetch(`/inventario/lotes/${tipoId}`)
+    fetch(`/inventario/lotes/categoria/${tipoId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error al cargar los lotes');
@@ -495,7 +495,7 @@ document.getElementById('categoriaInsumo').addEventListener('change', function()
     document.getElementById('unidadInsumo').value = '';
 
     // Obtener datos de la categoría
-    fetch(`/inventario/insumos/tipo/${categoriaId}`)
+    fetch(`/inventario/insumos-stock?categoria=${categoriaId}`)
         .then(response => response.json())
         .then(data => {
             console.log('Datos recibidos:', data);
@@ -724,7 +724,7 @@ document.getElementById('tipoInsumoSolicitud').addEventListener('change', functi
     document.getElementById('proveedorSolicitud').innerHTML = '<option value="">Seleccione un proveedor</option>';
 
     // Obtener datos del tipo de insumo
-    fetch(`/inventario/insumos/tipo/${tipoId}`)
+    fetch(`/inventario/insumos-stock?categoria=${tipoId}`)
         .then(response => response.json())
         .then(data => {
             // Actualizar select de insumos
@@ -1013,6 +1013,48 @@ function declararMermasCaducados() {
         text: 'Esta función no está implementada en el cliente'
     });
 }
+
+function filtrarPorCategoria() {
+    const categoria = document.getElementById('filtroCategoria').value;
+    const nombre = document.getElementById('filtroNombre').value;
+    let url = '/inventario/?';
+    
+    if (categoria) {
+        url += `categoria=${categoria}`;
+    }
+    if (nombre) {
+        url += `${categoria ? '&' : ''}nombre=${encodeURIComponent(nombre)}`;
+    }
+    
+    // Si no hay filtros, redirigir a la página base
+    if (!categoria && !nombre) {
+        url = '/inventario/';
+    }
+    
+    window.location.href = url;
+}
+
+function filtrarPorNombre() {
+    const nombre = document.getElementById('filtroNombre').value;
+    const categoria = document.getElementById('filtroCategoria').value;
+    let url = '/inventario/?';
+    
+    if (nombre) {
+        url += `nombre=${encodeURIComponent(nombre)}`;
+    }
+    if (categoria) {
+        url += `${nombre ? '&' : ''}categoria=${categoria}`;
+    }
+    
+    window.location.href = url;
+}
+
+// Agregar evento para buscar al presionar Enter
+document.getElementById('filtroNombre').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        filtrarPorNombre();
+    }
+});
 </script>
 
 <style>
@@ -1134,15 +1176,19 @@ function declararMermasCaducados() {
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                <input type="text" id="filtroNombre" class="form-control" placeholder="Buscar por nombre...">
+                <input type="text" class="form-control" id="filtroNombre" placeholder="Buscar por nombre..." value="{{ nombre_filtro or '' }}">
+                <button class="btn btn-primary" type="button" onclick="filtrarPorNombre()">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
             </div>
         </div>
         <div class="col-md-6">
-            <select id="filtroCategoria" class="form-select">
-                <option value=""><i class="fas fa-filter me-1"></i>Todas las categorías</option>
+            <select class="form-select" id="filtroCategoria" onchange="filtrarPorCategoria()">
+                <option value="">Todas las categorías</option>
                 {% for tipo in tipos_insumo %}
-                <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                <option value="{{ tipo.id }}" {% if tipo.id == categoria_actual %}selected{% endif %}>
+                    {{ tipo.nombre }}
+                </option>
                 {% endfor %}
             </select>
         </div>
@@ -1199,7 +1245,7 @@ function declararMermasCaducados() {
                                 {% for insumo in insumos %}
                                 <tr data-categoria="{{ insumo.tipo_insumo_id }}" data-nombre="{{ insumo.insumo_nombre.lower() }}">
                                     <td>{{ insumo.insumo_nombre }}</td>
-                                    <td>{{ insumo.tipo_insumo_nombre }}</td>
+                                    <td>{{ insumo.tipo_insumo }}</td>
                                     <td>{{ insumo.cantidad_existente }} {{ insumo.unidad }}</td>
                                     <td>
                                         <span class="badge {% if insumo.cantidad_existente <= 0 %}bg-success
@@ -1207,9 +1253,9 @@ function declararMermasCaducados() {
                                                          {% elif insumo.estado_caducidad == 'proximo_caducar' %}bg-warning
                                                          {% else %}bg-success{% endif %}">
                                             {% if insumo.cantidad_existente <= 0 %}
-                                                Terminado <i class="fas fa-check-circle">
+                                                Terminado <i class="fas fa-check-circle"></i>
                                             {% elif insumo.estado_caducidad == 'caduco' %}
-                                                Caducado <i class="fas fa-exclamation-triangle">
+                                                Caducado <i class="fas fa-exclamation-triangle"></i>
                                             {% elif insumo.estado_caducidad == 'proximo_caducar' %}
                                                 Caduca en {{ insumo.dias_restantes }} días
                                             {% else %}
@@ -1240,7 +1286,7 @@ function declararMermasCaducados() {
                 <ul class="pagination justify-content-center">
                     <!-- Botón Anterior -->
                     <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                        <a class="page-link" href="{{ url_for('inventario.index', page=pagination.prev_num) if pagination.has_prev else '#' }}">
+                        <a class="page-link" href="{{ url_for('inventario.index', page=pagination.prev_num, categoria=categoria_actual) if pagination.has_prev else '#' }}">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     </li>
@@ -1249,7 +1295,7 @@ function declararMermasCaducados() {
                     {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
                         {% if page_num %}
                             <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                                <a class="page-link" href="{{ url_for('inventario.index', page=page_num) }}">{{ page_num }}</a>
+                                <a class="page-link" href="{{ url_for('inventario.index', page=page_num, categoria=categoria_actual) }}">{{ page_num }}</a>
                             </li>
                         {% else %}
                             <li class="page-item disabled">
@@ -1260,7 +1306,7 @@ function declararMermasCaducados() {
 
                     <!-- Botón Siguiente -->
                     <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                        <a class="page-link" href="{{ url_for('inventario.index', page=pagination.next_num) if pagination.has_next else '#' }}">
+                        <a class="page-link" href="{{ url_for('inventario.index', page=pagination.next_num, categoria=categoria_actual) if pagination.has_next else '#' }}">
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     </li>

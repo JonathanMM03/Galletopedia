@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Obtener datos de la categoría
-            fetch(`/inventario/insumos/tipo/${categoriaId}`)
+            fetch(`/inventario/insumos-stock?categoria=${categoriaId}`)
                 .then(response => response.json())
                 .then(data => {
                     console.log('Datos recibidos:', data);
