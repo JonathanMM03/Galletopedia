@@ -378,7 +378,20 @@ def listar_insumos():
         for tipo in tipos_insumo:
             insumos = u.obtener_insumos_por_tipo(tipo.id)
             if insumos:  # Solo incluir tipos que tengan insumos
-                resultado[tipo.nombre] = insumos
+                # Modificar cada insumo para incluir su ID
+                insumos_con_id = []
+                for insumo in insumos:
+                    # Buscar el insumo en la base de datos para obtener su ID
+                    insumo_db = AdministracionInsumos.query.filter_by(
+                        insumo_nombre=insumo['nombre'],
+                        tipo_insumo_id=tipo.id
+                    ).first()
+                    
+                    if insumo_db:
+                        insumo['id'] = insumo_db.id
+                        insumos_con_id.append(insumo)
+                
+                resultado[tipo.nombre] = insumos_con_id
                 
         return jsonify(resultado)
     except Exception as e:

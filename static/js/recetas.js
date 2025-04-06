@@ -181,6 +181,9 @@ function cargarInsumosDisponibles(recetaId) {
 function agregarIngredienteRapido(recetaId) {
     console.log('Agregando ingrediente rápido para receta:', recetaId);
     
+    // Verificar si estamos creando una nueva receta
+    const esNuevaReceta = recetaId === 'crear';
+    
     const selector = document.getElementById(`selector-insumos-${recetaId}`);
     const ingredientesContainer = document.getElementById(`ingredientes-actuales-${recetaId}`);
     const btnAgregar = document.getElementById(`btn-agregar-rapido-${recetaId}`);
@@ -191,11 +194,6 @@ function agregarIngredienteRapido(recetaId) {
             ingredientesContainer: ingredientesContainer ? 'encontrado' : 'no encontrado',
             btnAgregar: btnAgregar ? 'encontrado' : 'no encontrado'
         });
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se encontraron los elementos necesarios para agregar el ingrediente'
-        });
         return;
     }
     
@@ -203,11 +201,6 @@ function agregarIngredienteRapido(recetaId) {
     
     // Validar selección
     if (!selectedOption.value || selectedOption.disabled) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor seleccione un ingrediente válido'
-        });
         return;
     }
     
@@ -215,21 +208,11 @@ function agregarIngredienteRapido(recetaId) {
     const cantidadInput = document.getElementById(`cantidad-${recetaId}`);
     if (!cantidadInput) {
         console.error('Campo de cantidad no encontrado');
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor seleccione un ingrediente primero'
-        });
         return;
     }
     
     const cantidad = parseFloat(cantidadInput.value);
     if (isNaN(cantidad) || cantidad <= 0) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor ingrese una cantidad válida mayor a 0'
-        });
         cantidadInput.focus();
         return;
     }
@@ -237,15 +220,18 @@ function agregarIngredienteRapido(recetaId) {
     // Verificar si el ingrediente ya está agregado
     const ingredienteId = selectedOption.dataset.insumo_id;
     const ingredientesActuales = ingredientesContainer.querySelectorAll('.ingrediente-item');
+    let ingredienteYaExiste = false;
+    
     for (const ingrediente of ingredientesActuales) {
-        if (ingrediente.dataset.ingredienteId === ingredienteId) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Este ingrediente ya está agregado a la receta'
-            });
-            return;
+        const ingredienteExistente = ingrediente.querySelector('input[name="insumo_id[]"]');
+        if (ingredienteExistente && ingredienteExistente.value === ingredienteId) {
+            ingredienteYaExiste = true;
+            break;
         }
+    }
+    
+    if (ingredienteYaExiste) {
+        return;
     }
     
     // Crear nuevo elemento de ingrediente
@@ -277,6 +263,10 @@ function agregarIngredienteRapido(recetaId) {
     // Agregar el nuevo ingrediente al contenedor
     ingredientesContainer.appendChild(nuevoIngrediente);
     
+    // Deshabilitar la opción en el selector
+    selectedOption.disabled = true;
+    selectedOption.textContent += ' (Ya en receta)';
+    
     // Resetear el selector y la cantidad
     selector.selectedIndex = 0;
     cantidadInput.value = '';
@@ -288,18 +278,15 @@ function agregarIngredienteRapido(recetaId) {
         cantidadContainer.style.display = 'none';
     }
     
-    // Mostrar mensaje de éxito
-    Swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: 'Ingrediente agregado correctamente',
-        timer: 1500,
-        showConfirmButton: false
-    });
+    // Actualizar la lista de insumos disponibles
+    actualizarInsumosDisponibles(recetaId);
 }
 
 function eliminarIngrediente(button, recetaId) {
     console.log('Eliminando ingrediente de receta:', recetaId);
+    
+    // Verificar si estamos creando una nueva receta
+    const esNuevaReceta = recetaId === 'crear';
     
     // Obtener el contenedor del ingrediente
     const ingredienteItem = button.closest('.ingrediente-item');
@@ -308,11 +295,23 @@ function eliminarIngrediente(button, recetaId) {
         return;
     }
     
+    // Obtener el ID del ingrediente
+    const ingredienteId = ingredienteItem.dataset.ingredienteId;
+    
     // Eliminar el ingrediente del DOM
     ingredienteItem.remove();
     
-    // Actualizar los insumos disponibles
-    actualizarInsumosDisponibles(recetaId);
+    // Habilitar la opción en el selector
+    const selector = document.getElementById(`selector-insumos-${recetaId}`);
+    if (selector) {
+        const options = selector.querySelectorAll('option');
+        options.forEach(option => {
+            if (option.dataset.insumo_id === ingredienteId) {
+                option.disabled = false;
+                option.textContent = option.textContent.replace(' (Ya en receta)', '');
+            }
+        });
+    }
     
     // Mostrar mensaje de éxito
     Swal.fire({
@@ -328,6 +327,9 @@ function eliminarIngrediente(button, recetaId) {
 
 function actualizarInsumosDisponibles(recetaId) {
     console.log('Actualizando insumos disponibles para receta:', recetaId);
+    
+    // Verificar si estamos creando una nueva receta
+    const esNuevaReceta = recetaId === 'crear';
     
     const selector = document.getElementById(`selector-insumos-${recetaId}`);
     if (!selector) {
@@ -346,8 +348,15 @@ function actualizarInsumosDisponibles(recetaId) {
     defaultOption.selected = true;
     selector.appendChild(defaultOption);
     
+    // Determinar la URL según el contexto
+    const url = esNuevaReceta 
+        ? '/inventario/insumos/listar'
+        : `/recetas/ingredientes_disponibles/${recetaId}`;
+    
+    console.log('URL para obtener insumos:', url);
+    
     // Obtener los insumos disponibles
-    fetch(`/recetas/ingredientes_disponibles/${recetaId}`)
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -357,28 +366,31 @@ function actualizarInsumosDisponibles(recetaId) {
         .then(data => {
             console.log('Insumos disponibles recibidos:', data);
             
-            if (!data.success) {
-                throw new Error(data.message || 'Error al obtener los insumos');
+            // Procesar los datos según el endpoint usado
+            const tiposInsumos = esNuevaReceta ? data : data.tipos_insumos;
+            
+            if (!tiposInsumos) {
+                throw new Error('No se pudieron obtener los insumos');
             }
             
             // Crear los grupos de opciones
-            Object.entries(data.tipos_insumos).forEach(([tipo, insumos]) => {
+            Object.entries(tiposInsumos).forEach(([tipo, insumos]) => {
                 if (insumos && insumos.length > 0) {
                     const optgroup = document.createElement('optgroup');
                     optgroup.label = tipo;
                     
                     insumos.forEach(insumo => {
                         const option = document.createElement('option');
-                        option.value = insumo.nombre;
-                        option.textContent = insumo.nombre;
+                        option.value = insumo.nombre || insumo.insumo_nombre;
+                        option.textContent = insumo.nombre || insumo.insumo_nombre;
                         option.dataset.unidad = insumo.unidad;
-                        option.dataset.cantidad = insumo.cantidad_disponible;
+                        option.dataset.cantidad = insumo.cantidad_disponible || insumo.cantidad_existente;
                         option.dataset.insumo_id = insumo.id;
-                        option.dataset.en_receta = insumo.en_receta;
-                        option.dataset.cantidad_actual = insumo.cantidad_actual;
+                        option.dataset.en_receta = insumo.en_receta || false;
+                        option.dataset.cantidad_actual = insumo.cantidad_actual || 0;
                         
                         // Si el insumo ya está en la receta, deshabilitarlo
-                        if (insumo.en_receta) {
+                        if (option.dataset.en_receta === 'true') {
                             option.disabled = true;
                             option.textContent += ' (Ya en receta)';
                         }
@@ -447,6 +459,9 @@ function actualizarInsumosDisponibles(recetaId) {
 
 function enviarFormularioReceta(event, recetaId = null) {
     console.log('=== INICIO enviarFormularioReceta ===');
+    
+    // Prevenir el comportamiento por defecto del formulario
+    event.preventDefault();
     
     const form = event.target;
     const formData = new FormData(form);
@@ -854,9 +869,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-        // Cargar recetas cuando se carga la página
-        cargarRecetas();
-    });
+    // Cargar recetas cuando se carga la página
+    cargarRecetas();
+});
 
 function editarReceta(recetaId) {
     console.log('=== INICIO editarReceta ===');
@@ -1083,6 +1098,313 @@ function verPasos(recetaId) {
         });
     });
 }
+
+function agregarIngredienteNuevaReceta() {
+    console.log('Agregando ingrediente a nueva receta');
+    
+    const selector = document.getElementById('selector-insumos-crear');
+    const ingredientesContainer = document.getElementById('ingredientes-actuales-crear');
+    const btnAgregar = document.getElementById('btn-agregar-rapido-crear');
+    
+    if (!selector || !ingredientesContainer || !btnAgregar) {
+        console.error('Elementos necesarios no encontrados:', {
+            selector: selector ? 'encontrado' : 'no encontrado',
+            ingredientesContainer: ingredientesContainer ? 'encontrado' : 'no encontrado',
+            btnAgregar: btnAgregar ? 'encontrado' : 'no encontrado'
+        });
+        return;
+    }
+    
+    const selectedOption = selector.options[selector.selectedIndex];
+    
+    // Validar selección
+    if (!selectedOption.value || selectedOption.disabled || selectedOption.value === '') {
+        console.log('Opción no válida o deshabilitada');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Selección inválida',
+            text: 'Por favor, seleccione un insumo válido',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+        });
+        return;
+    }
+    
+    // Obtener el campo de cantidad
+    const cantidadInput = document.getElementById('cantidad-crear');
+    if (!cantidadInput) {
+        console.error('Campo de cantidad no encontrado');
+        return;
+    }
+    
+    const cantidad = parseFloat(cantidadInput.value);
+    if (isNaN(cantidad) || cantidad <= 0) {
+        cantidadInput.focus();
+        return;
+    }
+    
+    // Verificar si el ingrediente ya está agregado
+    const ingredienteId = selectedOption.dataset.insumo_id;
+    console.log('ID del ingrediente seleccionado:', ingredienteId);
+    
+    // Si no hay ID, no podemos verificar duplicados
+    if (!ingredienteId) {
+        console.error('No se encontró el ID del ingrediente');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo identificar el ingrediente seleccionado',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+        });
+        return;
+    }
+    
+    const ingredientesActuales = ingredientesContainer.querySelectorAll('.ingrediente-item');
+    let ingredienteYaExiste = false;
+    
+    for (const ingrediente of ingredientesActuales) {
+        const ingredienteExistente = ingrediente.querySelector('input[name="insumo_id[]"]');
+        console.log('Comparando con ingrediente existente:', ingredienteExistente ? ingredienteExistente.value : 'no encontrado');
+        
+        if (ingredienteExistente && ingredienteExistente.value === ingredienteId) {
+            ingredienteYaExiste = true;
+            console.log('¡Ingrediente duplicado detectado!');
+            break;
+        }
+    }
+    
+    if (ingredienteYaExiste) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Ingrediente duplicado',
+            text: 'Este ingrediente ya está agregado a la receta',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+        });
+        return;
+    }
+    
+    // Crear nuevo elemento de ingrediente
+    const nuevoIngrediente = document.createElement('div');
+    nuevoIngrediente.className = 'row mb-3 ingrediente-item';
+    nuevoIngrediente.dataset.ingredienteId = ingredienteId;
+    nuevoIngrediente.innerHTML = `
+        <div class="col-md-4">
+            <label>Insumo</label>
+            <input type="text" class="form-control" value="${selectedOption.value}" readonly>
+            <input type="hidden" name="insumo_id[]" value="${ingredienteId}">
+        </div>
+        <div class="col-md-3">
+            <label>Cantidad</label>
+            <input type="number" step="0.01" name="cantidad_necesaria[]" class="form-control" value="${cantidad}" required>
+        </div>
+        <div class="col-md-3">
+            <label>Unidad</label>
+            <input type="text" name="unidad[]" class="form-control" value="${selectedOption.dataset.unidad}" readonly>
+        </div>
+        <div class="col-md-2">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-danger btn-sm d-block w-100" onclick="eliminarIngredienteNuevaReceta(this)">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    // Agregar el nuevo ingrediente al contenedor
+    ingredientesContainer.appendChild(nuevoIngrediente);
+    
+    // Deshabilitar la opción en el selector
+    selectedOption.disabled = true;
+    selectedOption.textContent += ' (Ya en receta)';
+    
+    // Resetear el selector y la cantidad
+    selector.selectedIndex = 0;
+    cantidadInput.value = '';
+    btnAgregar.disabled = true;
+    
+    // Ocultar el contenedor de cantidad
+    const cantidadContainer = document.getElementById('cantidad-container-crear');
+    if (cantidadContainer) {
+        cantidadContainer.style.display = 'none';
+    }
+    
+    // Mostrar mensaje de éxito
+    Swal.fire({
+        icon: 'success',
+        title: 'Ingrediente agregado',
+        text: 'El ingrediente ha sido agregado correctamente',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000
+    });
+}
+
+function eliminarIngredienteNuevaReceta(button) {
+    console.log('Eliminando ingrediente de nueva receta');
+    
+    // Obtener el contenedor del ingrediente
+    const ingredienteItem = button.closest('.ingrediente-item');
+    if (!ingredienteItem) {
+        console.error('No se encontró el elemento del ingrediente');
+        return;
+    }
+    
+    // Obtener el ID del ingrediente
+    const ingredienteId = ingredienteItem.dataset.ingredienteId;
+    
+    // Eliminar el ingrediente del DOM
+    ingredienteItem.remove();
+    
+    // Habilitar la opción en el selector
+    const selector = document.getElementById('selector-insumos-crear');
+    if (selector) {
+        const options = selector.querySelectorAll('option');
+        options.forEach(option => {
+            if (option.dataset.insumo_id === ingredienteId) {
+                option.disabled = false;
+                option.textContent = option.textContent.replace(' (Ya en receta)', '');
+            }
+        });
+    }
+    
+    // Mostrar mensaje de éxito
+    Swal.fire({
+        icon: 'success',
+        title: 'Ingrediente eliminado',
+        text: 'El ingrediente ha sido eliminado correctamente',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000
+    });
+}
+
+function cargarInsumosNuevaReceta() {
+    console.log('Cargando insumos para nueva receta');
+    
+    const selector = document.getElementById('selector-insumos-crear');
+    const cantidadContainer = document.getElementById('cantidad-container-crear');
+    const btnAgregar = document.getElementById('btn-agregar-rapido-crear');
+    
+    if (!selector || !cantidadContainer || !btnAgregar) {
+        console.error('Elementos necesarios no encontrados');
+        return;
+    }
+    
+    // Limpiar selector
+    selector.innerHTML = '<option value="">Seleccione un insumo</option>';
+    
+    // Obtener insumos disponibles
+    fetch('/inventario/insumos/listar')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener insumos');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos recibidos:', data);
+            
+            // Agrupar insumos por tipo
+            const insumosPorTipo = {};
+            for (const [tipo, insumos] of Object.entries(data)) {
+                insumosPorTipo[tipo] = insumos;
+            }
+            
+            // Crear grupos de opciones por tipo
+            for (const [tipo, insumos] of Object.entries(insumosPorTipo)) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = tipo;
+                
+                insumos.forEach(insumo => {
+                    // Verificar que el insumo tenga un ID y nombre
+                    if (!insumo.id || !insumo.nombre) {
+                        console.error('Insumo sin ID o nombre:', insumo);
+                        return;
+                    }
+                    
+                    const option = document.createElement('option');
+                    option.value = insumo.id;
+                    option.textContent = insumo.nombre;
+                    
+                    // Asignar los datos del insumo usando dataset
+                    option.dataset.insumo_id = insumo.id;
+                    option.dataset.unidad = insumo.unidad || '';
+                    option.dataset.cantidad = (insumo.cantidad || '0').toString();
+                    option.dataset.en_receta = 'false';
+                    option.dataset.cantidad_actual = '0';
+                    
+                    // Verificar que los datos se hayan asignado correctamente
+                    console.log(`Asignando insumo: ${option.value}`, {
+                        id: option.dataset.insumo_id,
+                        unidad: option.dataset.unidad,
+                        cantidad: option.dataset.cantidad
+                    });
+                    
+                    optgroup.appendChild(option);
+                });
+                
+                selector.appendChild(optgroup);
+            }
+            
+            // Agregar evento change al selector
+            selector.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                console.log('Opción seleccionada:', {
+                    valor: selectedOption.value,
+                    id: selectedOption.dataset.insumo_id,
+                    unidad: selectedOption.dataset.unidad
+                });
+                
+                if (selectedOption.value) {
+                    cantidadContainer.style.display = 'block';
+                    btnAgregar.disabled = false;
+                } else {
+                    cantidadContainer.style.display = 'none';
+                    btnAgregar.disabled = true;
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al cargar los insumos disponibles',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        });
+}
+
+// Evento para abrir el modal de nueva receta
+document.getElementById('btn-nueva-receta').addEventListener('click', function() {
+    // Limpiar el formulario
+    document.getElementById('form-nueva-receta').reset();
+    
+    // Limpiar la lista de ingredientes
+    const ingredientesContainer = document.getElementById('ingredientes-actuales-crear');
+    if (ingredientesContainer) {
+        ingredientesContainer.innerHTML = '';
+    }
+    
+    // Cargar insumos disponibles usando la nueva función
+    cargarInsumosNuevaReceta();
+    
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modal-nueva-receta'));
+    modal.show();
+});
 
 // Log de finalización del archivo
 console.log('=== FIN recetas.js ===');
