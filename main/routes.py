@@ -65,11 +65,33 @@ def solicitar_lote():
 def pedir():
     form = FlaskForm()
     receta_id = request.form.get('receta_id')
+    cantidad = int(request.form.get('cantidad', 1))  # Obtener cantidad del formulario
     receta = Recetas.query.get(receta_id)
     usuario = current_user
     tipoVenta = request.form.get('tipoVenta') or "1"
+    
+    if not receta:
+        flash('Receta no encontrada', 'error')
+        return redirect(url_for('main.index'))
+        
+    gramos = receta.gramaje_por_galleta
+    cantidadGalletas = math.floor(400 / gramos)  # Galletas por caja
+    
+    if tipoVenta == "2":  # Si es por caja
+        cantidad_total = cantidad * cantidadGalletas  # Total de galletas
+        precioCaja = cantidad * (receta.precio_venta * cantidadGalletas)  # Precio por caja
+    else:  # Si es por pieza
+        cantidad_total = cantidad
+        precioCaja = cantidad * receta.precio_venta  # Precio por pieza
 
-    return render_template("main/pedir.html", form=form, receta=receta, tipoVenta=tipoVenta)
+    return render_template("main/pedir.html", 
+                         form=form, 
+                         receta=receta, 
+                         tipoVenta=tipoVenta, 
+                         cantidad=cantidad,
+                         cantidad_total=cantidad_total,
+                         precioCaja=precioCaja,
+                         cantidadGalletas=cantidadGalletas)
 
 @main_bp.route('/confirmacionVenta', methods=['POST'])
 @login_required

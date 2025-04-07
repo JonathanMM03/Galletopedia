@@ -102,6 +102,7 @@ def pedir():
     form = forms.FlaskForm()
     
     receta_id = request.form.get('receta_id')
+    cantidad = request.form.get('cantidad', 1)  # Valor por defecto 1
     receta = Recetas.query.get(receta_id)
     usuario = current_user
 
@@ -109,14 +110,36 @@ def pedir():
         return redirect(url_for('login'))
     tipoVenta = request.form.get('tipoVenta') or "1"
 
-    return render_template("pedir.html", form=form, receta=receta, tipoVenta=tipoVenta)
+    return render_template("pedir.html", form=form, receta=receta, tipoVenta=tipoVenta, cantidad=cantidad)
 
 @app.route("/confirmacionVenta", methods=['GET', 'POST'])
 @login_required
 def confirmacionVenta():
+    if request.method == 'POST':
+        receta_id = request.form.get('receta_id')
+        cantidad = int(request.form.get('cantidad', 1))
+        tipoVenta = request.form.get('tipoVenta', '1')
+        
+        receta = Recetas.query.get(receta_id)
+        if not receta:
+            flash('Receta no encontrada', 'error')
+            return redirect(url_for('index'))
+            
+        # Calcular el total
+        precio_unitario = float(receta.precio_venta)
+        if tipoVenta == '2':  # Si es por caja
+            precio_unitario *= 12  # 12 piezas por caja
+            
+        total = precio_unitario * cantidad
+        
+        return render_template("confirmacionVenta.html", 
+                             receta=receta, 
+                             cantidad=cantidad, 
+                             tipoVenta=tipoVenta,
+                             precio_unitario=precio_unitario,
+                             total=total)
     
-    return render_template("confirmacionVenta.html")
-
+    return redirect(url_for('index'))
 
 @app.route("/verMas", methods=['POST'])
 def verMas():
