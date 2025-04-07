@@ -154,7 +154,7 @@ def intranet():
     if usuario.tipo_usuario_id == 3:  # Si es cliente
         flash('No tienes permiso para acceder a la intranet.', 'error')
         return redirect(url_for('index'))
-    return render_template("layoutIntranet.html", usuario=usuario)
+    return render_template("home.html", usuario=usuario)
 
 # Manejador de errores
 @app.errorhandler(Exception)

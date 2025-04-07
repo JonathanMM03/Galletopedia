@@ -368,10 +368,10 @@ def obtener_lotes_por_tipo(tipo_insumo_id):
         AdministracionInsumos.fecha_registro,
         AdministracionInsumos.fecha_caducidad,
         Proveedores.nombre_empresa.label('proveedor_nombre')
-    ).join(
+    ).outerjoin(
         InsumoProveedor,
         AdministracionInsumos.id == InsumoProveedor.insumo_id
-    ).join(
+    ).outerjoin(
         Proveedores,
         InsumoProveedor.proveedor_id == Proveedores.id
     ).filter(

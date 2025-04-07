@@ -1,0 +1,22 @@
+{% extends "layoutIntranet.html" %}
+
+{% block title %}Inicio - Intranet{% endblock %}
+
+{% block content %}
+<!-- Banner de Bienvenida -->
+<div class="container mt-4 d-flex justify-content-center align-items-center">
+  <div class="card mb-3" style="max-width: 800px; width: 100%; background-color: var(--color-beige-claro); border: none; box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);">
+    <div class="row g-0">
+      <div class="col-md-4 d-flex align-items-center justify-content-center p-4">
+        <img src="{{ url_for('static', filename='img/logo.jpeg') }}" class="img-fluid rounded-circle" alt="Logo Crumbella" style="width: 180px; height: 180px; object-fit: cover; border: 3px solid var(--color-marron);">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body p-4">
+          <h3 class="card-title mb-3" style="color: var(--color-marron-oscuro); font-weight: 600;">¡Bienvenido, {{ current_user.nombre }}!</h3>
+          <p class="card-text fs-5" style="color: var(--color-texto);">Gracias por ser parte de nuestra familia Crumbella. Estamos aquí para hacer tu experiencia más dulce.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

@@ -1,3 +1,76 @@
+// Función auxiliar para cerrar todos los modales abiertos
+function cerrarModalesAbiertos() {
+    const modalesAbiertos = document.querySelectorAll('.modal.show');
+    modalesAbiertos.forEach(modalElement => {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    });
+}
+
+// Función para declarar merma
+window.declararMerma = function(insumoId, loteId, cantidadDisponible, unidad) {
+    // Cerrar cualquier modal abierto
+    cerrarModalesAbiertos();
+    
+    // Configurar el modal de merma
+    document.getElementById('mermaInsumoId').value = insumoId;
+    document.getElementById('cantidadDisponible').value = `${cantidadDisponible} ${unidad}`;
+    document.getElementById('cantidadMerma').max = cantidadDisponible;
+    
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('declararMermaModal'));
+    modal.show();
+};
+
+// Función para mostrar mermas
+window.mostrarMermas = function() {
+    // Cerrar cualquier modal abierto
+    cerrarModalesAbiertos();
+    
+    // Obtener las mermas del servidor
+    fetch('/inventario/mermas/listar')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener las mermas');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.mermas) {
+                const tbody = document.getElementById('mermasTableBody');
+                tbody.innerHTML = '';
+                
+                data.mermas.forEach(merma => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="ps-4">${merma.insumo_nombre}</td>
+                        <td>${merma.tipo_insumo}</td>
+                        <td class="cantidad-mermada">${merma.cantidad_danada} ${merma.unidad}</td>
+                        <td>${merma.fecha_merma}</td>
+                        <td class="pe-4">${merma.motivo_merma}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+                // Mostrar el modal
+                const modal = new bootstrap.Modal(document.getElementById('mermasModal'));
+                modal.show();
+            } else {
+                throw new Error(data.message || 'Error al obtener las mermas');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Error al cargar las mermas'
+            });
+        });
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Script cargado');
     
@@ -328,4 +401,150 @@ document.addEventListener('DOMContentLoaded', function() {
             totalPagarInput.value = '';
         });
     }
+
+    // Función para ver detalles de un lote específico
+    window.verDetalleLote = function(loteId) {
+        console.log('Viendo detalle del lote:', loteId);
+        fetch(`/inventario/lote/${loteId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener detalles del lote');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.lote) {
+                    // Actualizar los campos del modal
+                    document.getElementById('insumoNombre').textContent = data.lote.insumo_nombre;
+                    document.getElementById('tipoInsumo').textContent = data.lote.tipo_insumo;
+                    document.getElementById('loteId').textContent = data.lote.lote_id;
+                    document.getElementById('cantidad').textContent = `${data.lote.cantidad} ${data.lote.unidad}`;
+                    document.getElementById('fechaRegistro').textContent = data.lote.fecha_registro;
+                    document.getElementById('fechaCaducidad').textContent = data.lote.fecha_caducidad;
+                    document.getElementById('proveedorNombre').textContent = data.lote.proveedor;
+                    document.getElementById('proveedorContacto').textContent = data.lote.proveedor_contacto;
+                    document.getElementById('proveedorTelefono').textContent = data.lote.proveedor_telefono;
+
+                    // Mostrar/ocultar alerta de caducidad
+                    const alertaCaducidad = document.getElementById('alertaCaducidad');
+                    if (data.lote.esta_caducado) {
+                        alertaCaducidad.classList.remove('d-none');
+                    } else {
+                        alertaCaducidad.classList.add('d-none');
+                    }
+
+                    // Actualizar estado del lote
+                    const estadoLote = document.getElementById('estadoLote');
+                    estadoLote.className = 'badge';
+                    if (data.lote.esta_caducado) {
+                        estadoLote.classList.add('bg-danger');
+                        estadoLote.innerHTML = '<i class="bi bi-x-circle me-1"></i>Caducado';
+                    } else if (data.lote.dias_restantes <= 30) {
+                        estadoLote.classList.add('bg-warning', 'text-dark');
+                        estadoLote.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Próximo a caducar';
+                    } else {
+                        estadoLote.classList.add('bg-success');
+                        estadoLote.innerHTML = '<i class="bi bi-check-circle me-1"></i>Vigente';
+                    }
+
+                    // Mostrar el modal
+                    const loteModal = new bootstrap.Modal(document.getElementById('loteModal'));
+                    loteModal.show();
+                } else {
+                    throw new Error('No se encontró el lote');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener detalles del lote');
+            });
+    };
+
+    // Función para ver todos los lotes de un tipo de insumo
+    window.verLotes = function(tipoInsumoId) {
+        console.log('Viendo lotes del tipo:', tipoInsumoId);
+        
+        // Cerrar cualquier modal abierto
+        cerrarModalesAbiertos();
+        
+        // Primero obtener el nombre de la categoría
+        fetch(`/inventario/insumos/tipo/${tipoInsumoId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener la categoría');
+                }
+                return response.json();
+            })
+            .then(categoriaData => {
+                // Actualizar el título del modal con el nombre de la categoría
+                const modalTitle = document.querySelector('#lotesModal .modal-title');
+                if (modalTitle && categoriaData.tipo) {
+                    modalTitle.innerHTML = `<i class="bi bi-box-seam me-2"></i>Lotes de ${categoriaData.tipo}`;
+                }
+                
+                // Ahora obtener los lotes
+                return fetch(`/inventario/lotes/${tipoInsumoId}`);
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener lotes');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.lotes) {
+                    const tbody = document.getElementById('lotesTableBody');
+                    if (!tbody) {
+                        console.error('No se encontró el elemento tbody para los lotes');
+                        return;
+                    }
+                    tbody.innerHTML = '';
+
+                    data.lotes.forEach(lote => {
+                        const tr = document.createElement('tr');
+                        const estadoClase = {
+                            'terminado': 'bg-secondary',
+                            'caduco': 'bg-danger',
+                            'proximo_caducar': 'bg-warning',
+                            'vigente': 'bg-success'
+                        }[lote.estado] || 'bg-secondary';
+                        
+                        const estadoBadge = `<span class="badge ${estadoClase}">${lote.mensaje}</span>`;
+                        
+                        tr.innerHTML = `
+                            <td class="ps-4">${lote.lote_id}</td>
+                            <td>${lote.cantidad} ${lote.unidad}</td>
+                            <td>${lote.proveedor || 'Sin proveedor'}</td>
+                            <td>${lote.fecha_registro || 'N/A'}</td>
+                            <td>${lote.fecha_caducidad || 'N/A'}</td>
+                            <td>${estadoBadge}</td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-sm" 
+                                    style="background-color: var(--color-marron); color: white;"
+                                    onclick="verDetalleLote('${lote.lote_id}')"
+                                    title="Ver detalle del lote">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Mostrar el modal de Bootstrap
+                    const modalElement = document.getElementById('lotesModal');
+                    if (!modalElement) {
+                        console.error('No se encontró el elemento modal de lotes');
+                        return;
+                    }
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                } else {
+                    throw new Error('No se encontraron lotes');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener lotes');
+            });
+    };
 });

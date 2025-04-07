@@ -1352,6 +1352,7 @@ def registrar_merma(insumo_id):
 @inventario_bp.route('/insumos-stock/<nombre>')
 @inventario_bp.route('/insumos-stock/categoria/<int:categoria_id>')
 @inventario_bp.route('/insumos-stock/<nombre>/categoria/<int:categoria_id>')
+@inventario_bp.route('/')
 def obtener_insumos_stock(nombre=None, categoria_id=None):
     """
     Endpoint para obtener información de stock de insumos.
@@ -1362,6 +1363,16 @@ def obtener_insumos_stock(nombre=None, categoria_id=None):
         # Obtener parámetros de la URL
         page = request.args.get('page', 1, type=int)
         per_page = 10  # Elementos por página
+        
+        # Obtener parámetros de consulta si están presentes
+        nombre_filtro = request.args.get('nombre')
+        categoria_filtro = request.args.get('categoria_id')
+        
+        # Usar los parámetros de consulta si están presentes, de lo contrario usar los parámetros de ruta
+        if nombre_filtro is not None:
+            nombre = nombre_filtro
+        if categoria_filtro is not None:
+            categoria_id = int(categoria_filtro)
         
         # Construir la consulta base
         query = db.session.query(

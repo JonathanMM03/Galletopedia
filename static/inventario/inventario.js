@@ -1,109 +1,207 @@
+// Funciones globales para filtrado
+window.filtrarPorNombre = function() {
+    const nombreFiltro = document.getElementById('filtroNombre').value.trim();
+    const categoriaFiltro = document.getElementById('filtroCategoria').value;
+    
+    // Construir la URL con los filtros
+    let url = '/inventario/';
+    const params = new URLSearchParams();
+    
+    if (nombreFiltro) {
+        params.append('nombre', nombreFiltro);
+    }
+    
+    if (categoriaFiltro) {
+        params.append('categoria', categoriaFiltro);
+    }
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    // Redirigir a la URL con los filtros
+    window.location.href = url;
+};
+
+window.filtrarPorCategoria = function() {
+    const nombreFiltro = document.getElementById('filtroNombre').value.trim();
+    const categoriaFiltro = document.getElementById('filtroCategoria').value;
+    
+    // Construir la URL con los filtros
+    let url = '/inventario/';
+    const params = new URLSearchParams();
+    
+    if (nombreFiltro) {
+        params.append('nombre', nombreFiltro);
+    }
+    
+    if (categoriaFiltro) {
+        params.append('categoria', categoriaFiltro);
+    }
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    // Redirigir a la URL con los filtros
+    window.location.href = url;
+};
+
+// Función para construir la URL con los filtros actuales
+window.construirUrlFiltrado = function() {
+    const nombreFiltro = document.getElementById('filtroNombre').value.trim();
+    const categoriaFiltro = document.getElementById('filtroCategoria').value;
+    
+    // Construir la URL con los filtros
+    let url = '/inventario/';
+    const params = new URLSearchParams();
+    
+    if (nombreFiltro) {
+        params.append('nombre', nombreFiltro);
+    }
+    
+    if (categoriaFiltro) {
+        params.append('categoria', categoriaFiltro);
+    }
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    return url;
+};
+
+// Función global para cargar datos del inventario
+window.cargarDatosInventario = function() {
+    // Verificar si los elementos del DOM existen
+    const cardsContainer = document.getElementById('cards-insumos');
+    const tablaInsumos = document.getElementById('tablaInsumos');
+    
+    if (!cardsContainer || !tablaInsumos) {
+        console.error('No se encontraron los elementos necesarios en el DOM');
+        return;
+    }
+
+    console.log('Elementos del DOM encontrados:', { 
+        cardsContainer: !!cardsContainer, 
+        tablaInsumos: !!tablaInsumos 
+    });
+
+    // Mostrar indicador de carga
+    cardsContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+    tablaInsumos.innerHTML = '<tr><td colspan="5" class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></td></tr>';
+
+    // Obtener los parámetros de la URL actual
+    const urlParams = new URLSearchParams(window.location.search);
+    const nombreFiltro = urlParams.get('nombre') || '';
+    const categoriaFiltro = urlParams.get('categoria_id') || '';
+    
+    // Construir la URL para la petición
+    let url = '/inventario/insumos-stock';
+    const params = new URLSearchParams();
+    
+    if (nombreFiltro) {
+        params.append('nombre', nombreFiltro);
+    }
+    
+    if (categoriaFiltro) {
+        params.append('categoria_id', categoriaFiltro);
+    }
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+
+    console.log('URL de la petición:', url);
+
+    // Realizar la petición
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        
+        if (data.success) {
+            // Verificar que los datos estén completos
+            if (data.insumos_detalle) {
+                console.log('Número de insumos en detalle:', data.insumos_detalle.length);
+                console.log('Insumos en detalle:', data.insumos_detalle);
+                
+                // Verificar la estructura de cada insumo
+                data.insumos_detalle.forEach((insumo, index) => {
+                    console.log(`Insumo ${index + 1}:`, {
+                        nombre: insumo.nombre,
+                        categoria: insumo.categoria,
+                        cantidad: insumo.cantidad,
+                        unidad: insumo.unidad,
+                        fecha_caducidad: insumo.fecha_caducidad
+                    });
+                });
+            } else {
+                console.error('No hay insumos en detalle en la respuesta');
+                data.insumos_detalle = [];
+            }
+            
+            if (data.insumos_agrupados) {
+                console.log('Número de insumos agrupados:', data.insumos_agrupados.length);
+                console.log('Insumos agrupados:', data.insumos_agrupados);
+            } else {
+                console.error('No hay insumos agrupados en la respuesta');
+                data.insumos_agrupados = [];
+            }
+            
+            if (data.totales_por_categoria) {
+                console.log('Totales por categoría:', data.totales_por_categoria);
+            } else {
+                console.error('No hay totales por categoría en la respuesta');
+                data.totales_por_categoria = {};
+            }
+            
+            // Actualizar las cards de insumos
+            actualizarCardsInsumos(data.insumos_agrupados);
+            
+            // Actualizar la tabla de insumos
+            console.log('Llamando a actualizarTablaInsumos con', data.insumos_detalle.length, 'insumos');
+            actualizarTablaInsumos(data.insumos_detalle);
+            
+            // Actualizar los totales por categoría
+            actualizarTotalesCategoria(data.totales_por_categoria);
+            
+            // Actualizar la paginación
+            actualizarPaginacion(data.pagination, url);
+        } else {
+            if (typeof window.mostrarError === 'function') {
+                window.mostrarError(data.error || 'Error al cargar los datos');
+            } else {
+                console.error(data.error || 'Error al cargar los datos');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error al cargar datos:', error);
+        if (typeof window.mostrarError === 'function') {
+            window.mostrarError(`Error al cargar los datos: ${error.message}`);
+        } else {
+            console.error(`Error al cargar los datos: ${error.message}`);
+        }
+    });
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos del DOM
     const cardsContainer = document.getElementById('cards-insumos');
-    const tablaInsumos = document.querySelector('table tbody');
+    const tablaInsumos = document.getElementById('tablaInsumos');
     
     // Cargar datos iniciales
-    cargarDatosInventario();
-
-    // Función para cargar datos del inventario
-    function cargarDatosInventario() {
-        // Verificar si los elementos del DOM existen
-        if (!cardsContainer || !tablaInsumos) {
-            console.error('No se encontraron los elementos necesarios en el DOM');
-            return;
-        }
-
-        // Mostrar indicador de carga
-        cardsContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
-        tablaInsumos.innerHTML = '<tr><td colspan="9" class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></td></tr>';
-
-        // Construir la URL para la petición
-        let url;
-        if (typeof window.construirUrlFiltrado === 'function') {
-            url = window.construirUrlFiltrado();
-        } else {
-            console.error('La función construirUrlFiltrado no está disponible');
-            url = '/inventario/insumos-stock';
-        }
-
-        console.log('URL de la petición:', url);
-
-        // Realizar la petición
-        fetch(url, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Respuesta del servidor:', data);
-            
-            if (data.success) {
-                // Verificar que los datos estén completos
-                if (data.insumos_detalle) {
-                    console.log('Número de insumos en detalle:', data.insumos_detalle.length);
-                    console.log('Insumos en detalle:', data.insumos_detalle);
-                } else {
-                    console.error('No hay insumos en detalle en la respuesta');
-                    data.insumos_detalle = [];
-                }
-                
-                if (data.insumos_agrupados) {
-                    console.log('Número de insumos agrupados:', data.insumos_agrupados.length);
-                    console.log('Insumos agrupados:', data.insumos_agrupados);
-                    
-                    // Verificar si insumos_agrupados es un objeto con una propiedad insumos_agrupados
-                    if (typeof data.insumos_agrupados === 'object' && !Array.isArray(data.insumos_agrupados) && data.insumos_agrupados.insumos_agrupados) {
-                        console.log('Insumos agrupados está anidado, extrayendo...');
-                        data.insumos_agrupados = data.insumos_agrupados.insumos_agrupados;
-                        console.log('Insumos agrupados extraídos:', data.insumos_agrupados);
-                    }
-                } else {
-                    console.error('No hay insumos agrupados en la respuesta');
-                    data.insumos_agrupados = [];
-                }
-                
-                if (data.totales_por_categoria) {
-                    console.log('Totales por categoría:', data.totales_por_categoria);
-                } else {
-                    console.error('No hay totales por categoría en la respuesta');
-                    data.totales_por_categoria = {};
-                }
-                
-                // Actualizar las cards de insumos
-                actualizarCardsInsumos(data.insumos_agrupados);
-                
-                // Actualizar la tabla de insumos
-                actualizarTablaInsumos(data.insumos_detalle);
-                
-                // Actualizar los totales por categoría
-                actualizarTotalesCategoria(data.totales_por_categoria);
-                
-                // Actualizar la paginación
-                actualizarPaginacion(data.pagination, url);
-            } else {
-                if (typeof window.mostrarError === 'function') {
-                    window.mostrarError(data.error || 'Error al cargar los datos');
-                } else {
-                    console.error(data.error || 'Error al cargar los datos');
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar datos:', error);
-            if (typeof window.mostrarError === 'function') {
-                window.mostrarError(`Error al cargar los datos: ${error.message}`);
-            } else {
-                console.error(`Error al cargar los datos: ${error.message}`);
-            }
-        });
-    }
+    window.cargarDatosInventario();
 
     // Función para actualizar la paginación
     function actualizarPaginacion(pagination, baseUrl) {
@@ -207,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
             url = window.construirUrlFiltrado();
         } else {
             console.error('La función construirUrlFiltrado no está disponible');
-            url = '/inventario/insumos-stock';
+            url = '/inventario/insumos-stock/';
         }
 
         console.log('URL de la petición para la tabla:', url);
@@ -317,14 +415,14 @@ document.addEventListener('DOMContentLoaded', function() {
         tablaInsumos.innerHTML = '';
         
         if (!insumos || insumos.length === 0) {
-            tablaInsumos.innerHTML = '<tr><td colspan="9" class="text-center">No se encontraron insumos</td></tr>';
+            tablaInsumos.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron insumos</td></tr>';
             return;
         }
 
         // Verificar que los insumos sean un array
         if (!Array.isArray(insumos)) {
             console.error('Los insumos no son un array:', insumos);
-            tablaInsumos.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al procesar los datos</td></tr>';
+            tablaInsumos.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error al procesar los datos</td></tr>';
             return;
         }
 
@@ -340,6 +438,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Calcular días hasta caducidad
             let diasCaducidad = 'N/A';
+            let badgeClass = 'bg-secondary';
+            let iconClass = 'bi bi-question-circle';
+            let mensajeCaducidad = '';
+            
             if (insumo.fecha_caducidad) {
                 const fechaCaducidad = new Date(insumo.fecha_caducidad);
                 const hoy = new Date();
@@ -347,31 +449,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (diferenciaDias < 0) {
                     diasCaducidad = 'Caducado';
+                    badgeClass = 'bg-danger';
+                    iconClass = 'bi bi-exclamation-triangle';
+                    mensajeCaducidad = 'Caducado';
                 } else if (diferenciaDias === 0) {
                     diasCaducidad = 'Caduca hoy';
+                    badgeClass = 'bg-warning text-dark';
+                    iconClass = 'bi bi-clock';
+                    mensajeCaducidad = 'Caduca hoy';
                 } else if (diferenciaDias <= 7) {
                     diasCaducidad = `Caduca en ${diferenciaDias} días`;
+                    badgeClass = 'bg-warning text-dark';
+                    iconClass = 'bi bi-clock';
+                    mensajeCaducidad = `Caduca en ${diferenciaDias} días`;
                 } else {
                     diasCaducidad = `Caduca en ${diferenciaDias} días`;
+                    badgeClass = 'bg-success';
+                    iconClass = 'bi bi-check-circle';
+                    mensajeCaducidad = `Caduca en ${diferenciaDias} días`;
                 }
             }
             
+            // Asegurarse de que la categoría esté presente
+            const categoria = insumo.categoria || 'N/A';
+            console.log(`Categoría para ${insumo.nombre}:`, categoria);
+            
             html += `
-                <tr>
-                    <td>${insumo.id || 'N/A'}</td>
-                    <td>${insumo.nombre || 'N/A'}</td>
-                    <td>${insumo.categoria || 'N/A'}</td>
-                    <td>${insumo.lote_id || 'N/A'}</td>
-                    <td>${insumo.cantidad || '0'}</td>
-                    <td>${insumo.unidad || 'N/A'}</td>
-                    <td>${insumo.precio ? `$${insumo.precio.toFixed(2)}` : 'N/A'}</td>
-                    <td>${insumo.proveedor || 'N/A'}</td>
-                    <td>${diasCaducidad}</td>
+                <tr data-categoria="${insumo.tipo_insumo_id || ''}" data-nombre="${insumo.nombre || ''}" class="">
+                    <td class="ps-4 fw-semibold">${insumo.nombre || 'N/A'}</td>
+                    <td>
+                        <span class="badge" style="background-color: var(--color-beige); color: var(--color-marron-oscuro);">
+                            ${categoria}
+                        </span>
+                    </td>
+                    <td class="fw-semibold">${insumo.cantidad || '0'} ${insumo.unidad || ''}</td>
+                    <td>
+                        <span class="badge ${badgeClass}">
+                            <i class="${iconClass} me-1"></i>${mensajeCaducidad}
+                        </span>
+                    </td>
+                    <td class="pe-4 text-end">
+                        <button class="btn btn-sm" 
+                            style="background-color: var(--color-marron); color: white;"
+                            onclick="verDetalleLote('${insumo.lote_id || ''}')"
+                            title="Ver detalle del lote">
+                            <i class="bi bi-box-seam"></i> Detalle
+                        </button>
+                    </td>
                 </tr>
             `;
         });
         
         tablaInsumos.innerHTML = html;
+        console.log('Tabla actualizada con éxito');
     }
 
     // Función para actualizar los totales por categoría
@@ -408,9 +538,6 @@ document.addEventListener('DOMContentLoaded', function() {
         html += '</div>';
         totalesContainer.innerHTML = html;
     }
-    
-    // Hacer la función cargarDatosInventario disponible globalmente
-    window.cargarDatosInventario = cargarDatosInventario;
 });
 
 // Funciones globales para acciones de insumos
