@@ -108,7 +108,7 @@
                         <i class="bi bi-person-fill me-1"></i>Nombre
                     </label>
                     <input type="text" class="form-control custom-form-control" id="nombre" name="nombre" 
-                           value="carlos lopez" required>
+                           value="{{ usuario.nombre }}" required>
                 </div>
                 
                 <div class="mb-4">
@@ -116,7 +116,7 @@
                         <i class="bi bi-envelope-fill me-1"></i>Email
                     </label>
                     <input type="email" class="form-control custom-form-control" id="email" name="email"
-                           value="correodegabo@gmail.com" required>
+                           value="{{ usuario.email }}" required>
                 </div>
                 
                 <div class="mb-4">
@@ -124,9 +124,11 @@
                         <i class="bi bi-person-badge-fill me-1"></i>Tipo de Usuario
                     </label>
                     <select class="form-select custom-form-control" id="tipo_usuario" name="tipo_usuario" required>
-                        <option value="1" selected>cliente</option>
-                        <option value="2">administrador</option>
-                        <option value="3">empleado</option>
+                        {% for tipo in tipos_usuario %}
+                        <option value="{{ tipo.id }}" {% if tipo.id == usuario.tipo_usuario_id %}selected{% endif %}>
+                            {{ tipo.nombre }}
+                        </option>
+                        {% endfor %}
                     </select>
                 </div>
                 

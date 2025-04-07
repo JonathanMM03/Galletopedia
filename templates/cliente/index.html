@@ -117,6 +117,30 @@
             border-radius: 10px;
             overflow: hidden;
             border: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            border-bottom: none;
+            padding: 1.5rem;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            border-top: none;
+            padding: 1.5rem;
+        }
+        
+        .btn-close {
+            opacity: 1;
+            filter: brightness(0) invert(1);
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
         }
         
         .no-users {
@@ -162,35 +186,10 @@
                                 <a href="{{ url_for('cliente.editar_usuario', id=usuario.id) }}" class="btn btn-outline-custom">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <button class="btn btn-outline-danger" data-bs-toggle="modal" 
-                                    data-bs-target="#eliminarModal{{ usuario.id }}">
+                                <button class="btn btn-outline-danger" 
+                                    onclick="abrirModalEliminar({{ usuario.id }}, '{{ usuario.nombre }}')">
                                     <i class="bi bi-trash"></i>
                                 </button>
-                            </div>
-                            
-                            <!-- Modal de Eliminación -->
-                            <div class="modal fade" id="eliminarModal{{ usuario.id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header" style="background-color: var(--color-secundario); color: white;">
-                                            <h5 class="modal-title">
-                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p>¿Estás seguro de eliminar al usuario <strong>{{ usuario.nombre }}</strong>?</p>
-                                            <p class="text-muted">Esta acción no se puede deshacer.</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <form action="{{ url_for('cliente.eliminar_usuario', id=usuario.id) }}" method="POST">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                                <button type="submit" class="btn custom-btn">Eliminar</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </td>
                     </tr>
@@ -252,4 +251,57 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Eliminación (fuera del bucle) -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: var(--color-secundario); color: white;">
+                <h5 class="modal-title" id="eliminarModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de eliminar al usuario <strong id="nombreUsuarioEliminar"></strong>?</p>
+                <p class="text-muted">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                </button>
+                <form id="formEliminarUsuario" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn custom-btn">
+                        <i class="bi bi-trash me-1"></i>Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para abrir el modal de eliminación
+    function abrirModalEliminar(id, nombre) {
+        // Actualizar el nombre del usuario en el modal
+        document.getElementById('nombreUsuarioEliminar').textContent = nombre;
+        
+        // Actualizar la acción del formulario
+        document.getElementById('formEliminarUsuario').action = "{{ url_for('cliente.eliminar_usuario', id=0) }}".replace('0', id);
+        
+        // Abrir el modal
+        var modal = new bootstrap.Modal(document.getElementById('eliminarModal'));
+        modal.show();
+    }
+    
+    // Asegurarse de que el modal se cierre correctamente
+    document.addEventListener('DOMContentLoaded', function() {
+        var eliminarModal = document.getElementById('eliminarModal');
+        eliminarModal.addEventListener('hidden.bs.modal', function() {
+            // Limpiar el formulario cuando se cierra el modal
+            document.getElementById('formEliminarUsuario').reset();
+        });
+    });
+</script>
 {% endblock %}
