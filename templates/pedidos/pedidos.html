@@ -247,6 +247,14 @@
                     <button type="button" class="filter-btn" data-filter="entregados">Entregados</button>
                     <button type="button" class="filter-btn" data-filter="cancelados">Cancelados</button>
                 </div>
+                <div class="ms-4">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o N° pedido" style="border-radius: 8px 0 0 8px; border: 1px solid var(--color-borde);">
+                        <button class="btn" type="button" id="searchButton" style="background-color: var(--color-principal); color: white; border-radius: 0 8px 8px 0;">
+                            <i class="fas fa-search text-white"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -494,7 +502,86 @@
     document.addEventListener('DOMContentLoaded', function () {
         const filterButtons = document.querySelectorAll('[data-filter]');
         const rows = document.querySelectorAll('.pedido-row');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
 
+        // Función para obtener parámetros de la URL
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            const results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // Función para filtrar por estado
+        function filterByStatus(filter) {
+            rows.forEach(row => {
+                if (filter === 'todos') {
+                    row.style.display = '';
+                } else if (filter === 'pendientes') {
+                    row.style.display = !['entregado', 'cancelado'].includes(row.getAttribute('data-estado')) ? '' : 'none';
+                } else if (filter === 'entregados') {
+                    row.style.display = row.getAttribute('data-estado') === 'entregado' ? '' : 'none';
+                } else if (filter === 'cancelados') {
+                    row.style.display = row.getAttribute('data-estado') === 'cancelado' ? '' : 'none';
+                }
+            });
+        }
+
+        // Función para buscar por texto
+        function searchByText(searchText) {
+            if (!searchText) {
+                // Si no hay texto de búsqueda, mostrar todas las filas según el filtro activo
+                const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                filterByStatus(activeFilter);
+                return;
+            }
+
+            searchText = searchText.toLowerCase();
+            rows.forEach(row => {
+                const pedidoId = row.querySelector('td:first-child').textContent.toLowerCase();
+                const cliente = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                const receta = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                
+                if (pedidoId.includes(searchText) || cliente.includes(searchText) || receta.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Función para filtrar por número de pedido específico
+        function filterByPedidoId(pedidoId) {
+            if (!pedidoId) return;
+            
+            pedidoId = pedidoId.toLowerCase();
+            rows.forEach(row => {
+                const rowPedidoId = row.querySelector('td:first-child').textContent.toLowerCase();
+                if (rowPedidoId.includes(pedidoId)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Función para filtrar por cliente específico
+        function filterByCliente(cliente) {
+            if (!cliente) return;
+            
+            cliente = cliente.toLowerCase();
+            rows.forEach(row => {
+                const rowCliente = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                if (rowCliente.includes(cliente)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Evento para los botones de filtro
         filterButtons.forEach(button => {
             button.addEventListener('click', function () {
                 const filter = this.getAttribute('data-filter');
@@ -504,19 +591,38 @@
                 this.classList.add('active');
 
                 // Filtrar filas
-                rows.forEach(row => {
-                    if (filter === 'todos') {
-                        row.style.display = '';
-                    } else if (filter === 'pendientes') {
-                        row.style.display = !['entregado', 'cancelado'].includes(row.getAttribute('data-estado')) ? '' : 'none';
-                    } else if (filter === 'entregados') {
-                        row.style.display = row.getAttribute('data-estado') === 'entregado' ? '' : 'none';
-                    } else if (filter === 'cancelados') {
-                        row.style.display = row.getAttribute('data-estado') === 'cancelado' ? '' : 'none';
-                    }
-                });
+                filterByStatus(filter);
+                
+                // Si hay texto de búsqueda, aplicar también la búsqueda
+                if (searchInput.value) {
+                    searchByText(searchInput.value);
+                }
             });
         });
+
+        // Evento para el botón de búsqueda
+        searchButton.addEventListener('click', function() {
+            searchByText(searchInput.value);
+        });
+
+        // Evento para la tecla Enter en el campo de búsqueda
+        searchInput.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                searchByText(this.value);
+            }
+        });
+
+        // Aplicar filtros desde parámetros de URL al cargar la página
+        const noPedido = getUrlParameter('no_pedido');
+        const cliente = getUrlParameter('cliente');
+        
+        if (noPedido) {
+            filterByPedidoId(noPedido);
+            searchInput.value = noPedido;
+        } else if (cliente) {
+            filterByCliente(cliente);
+            searchInput.value = cliente;
+        }
     });
 </script>
 {% endblock %}

@@ -405,6 +405,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para ver detalles de un lote específico
     window.verDetalleLote = function(loteId) {
         console.log('Viendo detalle del lote:', loteId);
+        
+        // Cerrar cualquier modal abierto
+        cerrarModalesAbiertos();
+        
         fetch(`/inventario/lote/${loteId}`)
             .then(response => {
                 if (!response.ok) {

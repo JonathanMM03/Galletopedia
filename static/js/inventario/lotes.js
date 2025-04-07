@@ -1,5 +1,15 @@
-function verLotes(tipoInsumoId) {
-    fetch(`/inventario/lotes/${tipoInsumoId}`)
+function verLotes(insumoId) {
+    // Cerrar cualquier modal abierto
+    const modalesAbiertos = document.querySelectorAll('.modal.show');
+    modalesAbiertos.forEach(modalElement => {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    });
+    
+    // Obtener los lotes del insumo
+    fetch(`/inventario/insumo/${insumoId}/lotes`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -62,8 +72,16 @@ function verLotes(tipoInsumoId) {
 
 // Función para ver detalles de un lote específico
 function verLoteEspecifico(loteId) {
-    console.log('Ver detalles del lote:', loteId);
+    // Cerrar cualquier modal abierto
+    const modalesAbiertos = document.querySelectorAll('.modal.show');
+    modalesAbiertos.forEach(modalElement => {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    });
     
+    // Obtener los detalles del lote
     fetch(`/inventario/lote/${loteId}`)
         .then(response => {
             if (!response.ok) {
@@ -156,24 +174,37 @@ window.verDetalleLote = function(loteId) {
 
 // Función para declarar merma
 function declararMerma(insumoId, loteId, cantidad, unidad) {
+    // Cerrar cualquier modal abierto
+    const modalesAbiertos = document.querySelectorAll('.modal.show');
+    modalesAbiertos.forEach(modalElement => {
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    });
+    
     // Guardar los datos para el formulario de merma
     document.getElementById('mermaInsumoId').value = insumoId;
     document.getElementById('cantidadDisponible').value = `${cantidad} ${unidad}`;
     document.getElementById('cantidadMerma').max = cantidad;
     
-    // Cerrar el modal actual y mostrar el modal de merma
-    if (document.getElementById('lotesModal').classList.contains('show')) {
-        bootstrap.Modal.getInstance(document.getElementById('lotesModal')).hide();
-    } else if (document.getElementById('loteModal').classList.contains('show')) {
-        bootstrap.Modal.getInstance(document.getElementById('loteModal')).hide();
-    }
-    
+    // Mostrar el modal de merma
     const modal = new bootstrap.Modal(document.getElementById('declararMermaModal'));
     modal.show();
 }
 
 // Función para mostrar el modal de merma
 function mostrarModalMerma() {
+    // Cerrar el modal de detalles del lote
+    const loteModal = document.getElementById('loteModal');
+    if (loteModal && loteModal.classList.contains('show')) {
+        const modalInstance = bootstrap.Modal.getInstance(loteModal);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    }
+    
+    // Mostrar el modal de merma
     const modal = new bootstrap.Modal(document.getElementById('declararMermaModal'));
     modal.show();
 }
