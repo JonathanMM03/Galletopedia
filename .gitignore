@@ -5,3 +5,6 @@
 **/__pycache__/
 /legacy
 logs/
+.dockerignore
+Dockerfile
+docker-compose.yml
