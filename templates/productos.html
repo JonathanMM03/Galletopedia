@@ -1,20 +1,20 @@
 <div class="col">
-    <div class="card h-100 shadow-sm">
+    <div class="card h-100 shadow-sm" style="border-color: #A67C52;">
         <!-- Imagen -->
         {% if product.imagen %}
-        <img src="data:image/jpeg;base64,{{ product.imagen }}" class="card-img-top fixed-size-img" alt="{{ product.nombre }}"
-            style="height: 200px; object-fit: cover;">
+        <img src="data:image/jpeg;base64,{{ product.imagen }}" class="card-img-top fixed-size-img"
+            alt="{{ product.nombre }}" style="height: 200px; object-fit: cover;">
         {% else %}
         <img src="{{ url_for('static', filename='img/galleta_default.jpeg') }}" class="card-img-top fixed-size-img"
             alt="Sin imagen" style="height: 200px; object-fit: cover;">
         {% endif %}
-        
-        <div class="card-body d-flex flex-column">
+
+        <div class="card-body d-flex flex-column bg-beige">
             <!-- Nombre -->
-            <h5 class="card-title text-center">{{ product.nombre }}</h5>
-            
+            <h5 class="card-title text-center text-brown">{{ product.nombre }}</h5>
+
             <!-- Precio -->
-            <p class="card-text text-center fs-5">
+            <p class="card-text text-center fs-5 text-dark">
                 <strong>${{ "%.2f"|format(product.precio_venta) }} MXN</strong>
             </p>
 
@@ -23,7 +23,7 @@
                 <div class="row g-2">
                     <!-- Botón para ver ingredientes -->
                     <div class="col-6">
-                        <button class="btn btn-outline-primary w-100" data-bs-toggle="modal"
+                        <button class="btn btn-brown w-100" data-bs-toggle="modal"
                             data-bs-target="#modalIngredientes{{ product.id }}">
                             Ver Ingredientes
                         </button>
@@ -33,41 +33,164 @@
                         <form action="{{ url_for('main.pedir') }}" method="POST">
                             {{ form.hidden_tag() }}
                             <input type="hidden" name="receta_id" value="{{ product.id }}">
-                            <button class="btn btn-outline-primary w-100" type="submit">Pedir</button>
+                            <button class="btn btn-outline-brown w-100" type="submit">Pedir</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
 
     <!-- Modal de Ingredientes -->
     <div class="modal fade" id="modalIngredientes{{ product.id }}" tabindex="-1"
         aria-labelledby="modalIngredientesLabel{{ product.id }}" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalIngredientesLabel{{ product.id }}">
+                <div class="modal-header bg-brown text-white">
+                    <h5 class="modal-title custom-modal-title" id="modalIngredientesLabel{{ product.id }}">
                         Ingredientes de {{ product.nombre }}
                     </h5>
-                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    <ul class="list-unstyled">
-                    {% for ingrediente in product.ingredientes %}
+                <div class="modal-body bg-beige custom-modal-body">
+                    <ul class="list-unstyled custom-ingredients-list">
+                        {% for ingrediente in product.ingredientes %}
                         <li class="mb-2">
                             • {{ ingrediente.insumo.insumo_nombre }}
                         </li>
-                    {% else %}
+                        {% else %}
                         <li>No hay ingredientes registrados.</li>
-                    {% endfor %}
+                        {% endfor %}
                     </ul>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <div class="modal-footer bg-brown">
+                    <button type="button" class="btn btn-beige custom-modal-btn" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Colores base */
+    .bg-brown {
+        background-color: #A67C52;
+    }
+
+    .bg-beige {
+        background-color: #F5DEB3;
+    }
+
+    .text-brown {
+        color: #A67C52;
+    }
+
+    /* Botones principales */
+    .btn-brown {
+        background-color: #A67C52;
+        border-color: #A67C52;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .btn-brown:hover {
+        background-color: #8B5E3B;
+        border-color: #8B5E3B;
+        color: white;
+    }
+
+    /* Botones outline */
+    .btn-outline-brown {
+        border-color: #A67C52;
+        color: #A67C52;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-brown:hover {
+        background-color: #A67C52;
+        color: white;
+    }
+
+    /* Botones beige */
+    .btn-beige {
+        background-color: #F5DEB3;
+        color: #343a40;
+        transition: all 0.3s ease;
+    }
+
+    .btn-beige:hover {
+        background-color: #e8d1a1;
+        color: #343a40;
+    }
+
+    /* Efectos para tarjetas */
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(166, 124, 82, 0.2) !important;
+    }
+
+    /* Estilos para la imagen */
+    .fixed-size-img {
+        border-bottom: 2px solid #A67C52;
+    }
+
+    /* Estilos para el modal */
+    .modal-content {
+        border: 2px solid #A67C52;
+    }
+
+    /* Tipografía para títulos del modal */
+    .custom-modal-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        font-size: 1.4rem;
+    }
+
+    /* Cuerpo del modal */
+    .custom-modal-body {
+        font-family: 'Raleway', sans-serif;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        padding: 1.5rem;
+    }
+
+    /* Lista de ingredientes */
+    .custom-ingredients-list li {
+        font-size: 1.1rem;
+        padding: 0.3rem 0;
+        border-bottom: 1px dashed #A67C52;
+        color: #5a3921;
+    }
+
+    .custom-ingredients-list li:last-child {
+        border-bottom: none;
+    }
+
+    /* Botón de cerrar */
+    .custom-modal-btn {
+        font-family: 'Raleway', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        padding: 0.5rem 1.5rem;
+        border: 2px solid #5a3921;
+    }
+
+    /* Efecto hover para el botón */
+    .custom-modal-btn:hover {
+        background-color: #e8d1a1;
+        border-color: #5a3921;
+        transform: translateY(-1px);
+    }
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Raleway:wght@400;500&display=swap"
+    rel="stylesheet">

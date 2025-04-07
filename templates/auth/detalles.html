@@ -1,95 +1,119 @@
 {% extends "layout.html" %}
 
-{% block title %}Detalles de Cuenta{% endblock %}
+{% block title %}Detalles de Cuenta | Crumbella 🍪{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Detalles de Cuenta</h4>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+                <!-- Encabezado de la tarjeta -->
+                <div class="card-header bg-marron text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-circle fs-3 me-3"></i>
+                        <h4 class="mb-0">Detalles de Cuenta</h4>
+                    </div>
                 </div>
-                <div class="card-body">
+                
+                <div class="card-body p-4">
                     <!-- Información del usuario -->
-                    <div class="mb-4">
-                        <h5 class="border-bottom pb-2">Información Personal</h5>
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Nombre:</strong>
+                    <div class="mb-5">
+                        <h5 class="fw-bold text-marron mb-4 pb-2 border-bottom border-marron">
+                            <i class="bi bi-info-circle me-2"></i>Información Personal
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="bg-beige-light p-3 rounded-2">
+                                    <p class="mb-1 fw-semibold text-muted small">Nombre</p>
+                                    <p class="mb-0 fs-5">{{ current_user.nombre }}</p>
+                                </div>
                             </div>
-                            <div class="col-md-8">
-                                {{ current_user.nombre }}
+                            <div class="col-md-6">
+                                <div class="bg-beige-light p-3 rounded-2">
+                                    <p class="mb-1 fw-semibold text-muted small">Email</p>
+                                    <p class="mb-0 fs-5">{{ current_user.email }}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Email:</strong>
-                            </div>
-                            <div class="col-md-8">
-                                {{ current_user.email }}
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <strong>Tipo de Usuario:</strong>
-                            </div>
-                            <div class="col-md-8">
-                                {{ current_user.tipo_usuario.nombre }}
+                            <div class="col-md-6">
+                                <div class="bg-beige-light p-3 rounded-2">
+                                    <p class="mb-1 fw-semibold text-muted small">Tipo de Usuario</p>
+                                    <p class="mb-0 fs-5">{{ current_user.tipo_usuario.nombre }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Cambiar contraseña -->
-                    <div class="mb-4">
-                        <h5 class="border-bottom pb-2">Cambiar Contraseña</h5>
-                        <form method="POST" action="{{ url_for('auth.detalles') }}">
+                    <div class="mb-5">
+                        <h5 class="fw-bold text-marron mb-4 pb-2 border-bottom border-marron">
+                            <i class="bi bi-shield-lock me-2"></i>Cambiar Contraseña
+                        </h5>
+                        <form method="POST" action="{{ url_for('auth.detalles') }}" class="needs-validation" novalidate>
                             {{ form.csrf_token }}
-                            <div class="mb-3">
-                                {{ form.password_actual.label(class="form-label") }}
-                                {{ form.password_actual(class="form-control") }}
-                                {% if form.password_actual.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.password_actual.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating mb-3">
+                                        {{ form.password_actual(class="form-control", id="floatingPasswordActual", placeholder=" ") }}
+                                        <label for="floatingPasswordActual">{{ form.password_actual.label.text }}</label>
+                                        {% if form.password_actual.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.password_actual.errors %}
+                                                    <small><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.password_nueva.label(class="form-label") }}
-                                {{ form.password_nueva(class="form-control") }}
-                                {% if form.password_nueva.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.password_nueva.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        {{ form.password_nueva(class="form-control", id="floatingPasswordNueva", placeholder=" ") }}
+                                        <label for="floatingPasswordNueva">{{ form.password_nueva.label.text }}</label>
+                                        {% if form.password_nueva.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.password_nueva.errors %}
+                                                    <small><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
-                            </div>
-                            <div class="mb-3">
-                                {{ form.confirmar_password.label(class="form-label") }}
-                                {{ form.confirmar_password(class="form-control") }}
-                                {% if form.confirmar_password.errors %}
-                                    <div class="text-danger">
-                                        {% for error in form.confirmar_password.errors %}
-                                            <small>{{ error }}</small>
-                                        {% endfor %}
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        {{ form.confirmar_password(class="form-control", id="floatingConfirmarPassword", placeholder=" ") }}
+                                        <label for="floatingConfirmarPassword">{{ form.confirmar_password.label.text }}</label>
+                                        {% if form.confirmar_password.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.confirmar_password.errors %}
+                                                    <small><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
-                            </div>
-                            <div class="d-grid">
-                                {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-marron text-white py-2 fw-bold">
+                                            <i class="bi bi-key me-2"></i>Actualizar Contraseña
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
                     
                     <!-- Eliminar cuenta -->
                     <div class="mb-4">
-                        <h5 class="border-bottom pb-2">Eliminar Cuenta</h5>
-                        <p>Si deseas eliminar tu cuenta, haz clic en el botón a continuación. Esta acción es irreversible.</p>
+                        <h5 class="fw-bold text-danger mb-4 pb-2 border-bottom border-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Eliminar Cuenta
+                        </h5>
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                            <strong>Advertencia:</strong> Esta acción es irreversible. Todos tus datos serán eliminados permanentemente.
+                        </div>
                         <div class="d-grid">
-                            <a href="{{ url_for('auth.eliminar_cuenta') }}" class="btn btn-danger">Eliminar Cuenta</a>
+                            <a href="{{ url_for('auth.eliminar_cuenta') }}" class="btn btn-outline-danger py-2 fw-bold">
+                                <i class="bi bi-trash me-2"></i>Eliminar Mi Cuenta
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -97,4 +121,65 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+
+<style>
+    :root {
+        --color-marron: #A67C52;
+        --color-marron-oscuro: #8B5E3B;
+        --color-beige: #F5DEB3;
+        --color-beige-light: #FFF8E8;
+    }
+    
+    .bg-marron {
+        background-color: var(--color-marron);
+    }
+    
+    .bg-beige-light {
+        background-color: var(--color-beige-light);
+    }
+    
+    .text-marron {
+        color: var(--color-marron);
+    }
+    
+    .border-marron {
+        border-color: var(--color-marron) !important;
+    }
+    
+    .btn-marron {
+        background-color: var(--color-marron);
+        border-color: var(--color-marron);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-marron:hover {
+        background-color: var(--color-marron-oscuro);
+        border-color: var(--color-marron-oscuro);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-danger:hover {
+        transform: translateY(-2px);
+    }
+    
+    .card {
+        border: 1px solid rgba(166, 124, 82, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(166, 124, 82, 0.15) !important;
+    }
+    
+    .form-control:focus {
+        border-color: var(--color-marron);
+        box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+    }
+    
+    .form-floating>label {
+        color: var(--color-marron);
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}

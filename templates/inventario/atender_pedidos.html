@@ -4,82 +4,282 @@
 
 {% block styles %}
 <style>
-.card {
-    border: none;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
+    :root {
+        --color-marron: #A67C52;
+        --color-marron-oscuro: #8B5E3B;
+        --color-beige: #F5DEB3;
+        --color-beige-claro: #FFF8E8;
+        --color-texto: #5A3921;
+        --color-success: #28a745;
+        --color-info: #17a2b8;
+        --color-warning: #ffc107;
+        --color-danger: #dc3545;
+    }
 
-.card:hover {
-    transform: translateY(-2px);
-}
+    /* Estilos generales */
+    h2 {
+        color: var(--color-marron-oscuro);
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
 
-.badge {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-}
+    h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background-color: var(--color-marron);
+    }
 
-.btn-group .btn-light {
-    color: white;
-    background-color: rgba(255,255,255,0.1);
-    border: none;
-}
+    /* Estilos para la barra superior */
+    .d-flex.justify-content-between {
+        background-color: var(--color-beige-claro);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(166, 124, 82, 0.1);
+    }
 
-.btn-group .btn-light:hover {
-    background-color: rgba(255,255,255,0.2);
-}
+    .btn-secondary {
+        background-color: var(--color-marron-oscuro);
+        border-color: var(--color-marron-oscuro);
+        color: white;
+        transition: all 0.3s ease;
+    }
 
-.list-group-item {
-    border-left: none;
-    border-right: none;
-}
+    .btn-secondary:hover {
+        background-color: var(--color-marron);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(166, 124, 82, 0.2);
+    }
 
-.list-group-item:first-child {
-    border-top: none;
-}
+    /* Estilos para la card de la tabla */
+    .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(166, 124, 82, 0.1);
+        overflow: hidden;
+    }
 
-.list-group-item:last-child {
-    border-bottom: none;
-}
+    .card-body {
+        padding: 0;
+    }
 
-.list-group-item:hover {
-    background-color: var(--beige);
-}
+    /* Estilos para la tabla */
+    .table {
+        margin-bottom: 0;
+    }
 
-.modal-content {
-    border-radius: 15px;
-    border: none;
-}
+    .table thead th {
+        background-color: var(--color-marron-oscuro);
+        color: var(--color-beige);
+        font-weight: 500;
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: none;
+        position: sticky;
+        top: 0;
+    }
 
-.modal-header {
-    background-color: var(--beige);
-    border-radius: 15px 15px 0 0;
-    border: none;
-}
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid rgba(166, 124, 82, 0.1);
+    }
 
-.modal-body {
-    padding: 2rem;
-}
+    .table-hover tbody tr:hover {
+        background-color: rgba(245, 222, 179, 0.2);
+    }
 
-.pedido-info {
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
+    /* Estilos para los badges de estado */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-.pedido-info h5 {
-    color: var(--beige);
-    margin-bottom: 1rem;
-}
+    .bg-warning {
+        background-color: var(--color-warning) !important;
+        color: var(--color-texto);
+    }
 
-.pedido-info p {
-    margin-bottom: 0.5rem;
-}
+    .bg-info {
+        background-color: var(--color-info) !important;
+        color: white;
+    }
 
-.pedido-info strong {
-    color: #495057;
-}
+    .bg-success {
+        background-color: var(--color-success) !important;
+        color: white;
+    }
+
+    .bg-danger {
+        background-color: var(--color-danger) !important;
+        color: white;
+    }
+
+    /* Estilos para los botones de acción */
+    .btn-group .btn {
+        border-radius: 8px !important;
+        margin: 0 2px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-info {
+        background-color: var(--color-info);
+        border-color: var(--color-info);
+    }
+
+    .btn-success {
+        background-color: var(--color-success);
+        border-color: var(--color-success);
+    }
+
+    .btn-danger {
+        background-color: var(--color-danger);
+        border-color: var(--color-danger);
+    }
+
+    /* Estilos para el modal */
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 5px 25px rgba(166, 124, 82, 0.2);
+    }
+
+    .modal-header {
+        background-color: var(--color-marron);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+        padding: 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 2rem;
+    }
+
+    .modal-footer {
+        border-top: 1px solid rgba(166, 124, 82, 0.1);
+        padding: 1.5rem;
+    }
+
+    /* Estilos para las secciones de información */
+    .pedido-info {
+        background-color: var(--color-beige-claro);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--color-marron);
+    }
+
+    .pedido-info h5 {
+        color: var(--color-marron-oscuro);
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .pedido-info h5::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--color-marron);
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .pedido-info p {
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        max-width: 400px;
+    }
+
+    .pedido-info strong {
+        color: var(--color-marron-oscuro);
+        font-weight: 500;
+        margin-right: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+
+        .table thead th,
+        .table tbody td {
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-group .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .pedido-info {
+            padding: 1rem;
+        }
+    }
+
+    /* Animaciones */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .table tbody tr {
+        animation: fadeIn 0.3s ease forwards;
+        opacity: 0;
+    }
+
+    .table tbody tr:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .table tbody tr:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .table tbody tr:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .table tbody tr:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .table tbody tr:nth-child(5) {
+        animation-delay: 0.5s;
+    }
 </style>
 <!-- SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -140,22 +340,30 @@
                                     <td>
                                         <div class="btn-group">
                                             {% if pedido.estado_pedido.nombre == 'Pendiente' %}
-                                            <button class="btn btn-sm btn-info" onclick="verDetallesPedido({{ pedido.id }})" title="Ver detalles">
+                                            <button class="btn btn-sm btn-info"
+                                                onclick="verDetallesPedido({{ pedido.id }})" title="Ver detalles">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-success" onclick="procesarPedido({{ pedido.id }}, 'iniciar')" title="Iniciar pedido">
+                                            <button class="btn btn-sm btn-success"
+                                                onclick="procesarPedido({{ pedido.id }}, 'iniciar')"
+                                                title="Iniciar pedido">
                                                 <i class="bi bi-play"></i>
                                             </button>
                                             {% elif pedido.estado_pedido.nombre == 'En Proceso' %}
-                                            <button class="btn btn-sm btn-info" onclick="verDetallesPedido({{ pedido.id }})" title="Ver detalles">
+                                            <button class="btn btn-sm btn-info"
+                                                onclick="verDetallesPedido({{ pedido.id }})" title="Ver detalles">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-success" onclick="procesarPedido({{ pedido.id }}, 'completar')" title="Completar pedido">
+                                            <button class="btn btn-sm btn-success"
+                                                onclick="procesarPedido({{ pedido.id }}, 'completar')"
+                                                title="Completar pedido">
                                                 <i class="bi bi-check"></i>
                                             </button>
                                             {% endif %}
                                             {% if pedido.estado_pedido.nombre in ['Pendiente', 'En Proceso'] %}
-                                            <button class="btn btn-sm btn-danger" onclick="procesarPedido({{ pedido.id }}, 'cancelar')" title="Cancelar pedido">
+                                            <button class="btn btn-sm btn-danger"
+                                                onclick="procesarPedido({{ pedido.id }}, 'cancelar')"
+                                                title="Cancelar pedido">
                                                 <i class="bi bi-x"></i>
                                             </button>
                                             {% endif %}
@@ -173,7 +381,8 @@
 </div>
 
 <!-- Modal de Detalles del Pedido -->
-<div class="modal fade" id="detallesPedidoModal" tabindex="-1" aria-labelledby="detallesPedidoModalLabel" aria-hidden="true">
+<div class="modal fade" id="detallesPedidoModal" tabindex="-1" aria-labelledby="detallesPedidoModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -215,89 +424,89 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-function verDetallesPedido(pedidoId) {
-    fetch(`/inventario/pedidos/galletas/${pedidoId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
+    function verDetallesPedido(pedidoId) {
+        fetch(`/inventario/pedidos/galletas/${pedidoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error
+                    });
+                    return;
+                }
+
+                const pedido = data.pedido;
+                document.getElementById('clienteNombre').textContent = pedido.cliente;
+                document.getElementById('pedidoId').textContent = `N°${pedido.id}`;
+                document.getElementById('recetaNombre').textContent = pedido.receta;
+                document.getElementById('cantidad').textContent = pedido.cantidad;
+                document.getElementById('precioUnitario').textContent = pedido.precio_unitario.toFixed(2);
+                document.getElementById('total').textContent = pedido.total.toFixed(2);
+                document.getElementById('fecha').textContent = pedido.fecha;
+                document.getElementById('estado').textContent = pedido.estado;
+                document.getElementById('gramaje').textContent = pedido.gramaje;
+                document.getElementById('galletasLote').textContent = pedido.galletas_lote;
+                document.getElementById('costoGalleta').textContent = pedido.costo_galleta.toFixed(2);
+
+                const modal = new bootstrap.Modal(document.getElementById('detallesPedidoModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: data.error
+                    text: 'Error al cargar los detalles del pedido'
                 });
-                return;
-            }
-
-            const pedido = data.pedido;
-            document.getElementById('clienteNombre').textContent = pedido.cliente;
-            document.getElementById('pedidoId').textContent = `N°${pedido.id}`;
-            document.getElementById('recetaNombre').textContent = pedido.receta;
-            document.getElementById('cantidad').textContent = pedido.cantidad;
-            document.getElementById('precioUnitario').textContent = pedido.precio_unitario.toFixed(2);
-            document.getElementById('total').textContent = pedido.total.toFixed(2);
-            document.getElementById('fecha').textContent = pedido.fecha;
-            document.getElementById('estado').textContent = pedido.estado;
-            document.getElementById('gramaje').textContent = pedido.gramaje;
-            document.getElementById('galletasLote').textContent = pedido.galletas_lote;
-            document.getElementById('costoGalleta').textContent = pedido.costo_galleta.toFixed(2);
-
-            const modal = new bootstrap.Modal(document.getElementById('detallesPedidoModal'));
-            modal.show();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al cargar los detalles del pedido'
             });
-        });
-}
-
-function procesarPedido(pedidoId, accion) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    if (!csrfToken) {
-        console.error('No se encontró el token CSRF');
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error de seguridad: No se encontró el token CSRF'
-        });
-        return;
     }
 
-    fetch(`/inventario/pedidos/galletas/${pedidoId}/${accion}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': csrfToken
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Éxito!',
-                text: data.message || 'Operación realizada correctamente'
-            }).then(() => {
-                location.reload();
-            });
-        } else {
+    function procesarPedido(pedidoId, accion) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrfToken) {
+            console.error('No se encontró el token CSRF');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: data.message || 'Error al procesar la solicitud'
+                text: 'Error de seguridad: No se encontró el token CSRF'
             });
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Error al procesar la solicitud'
-        });
-    });
-}
+
+        fetch(`/inventario/pedidos/galletas/${pedidoId}/${accion}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: data.message || 'Operación realizada correctamente'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al procesar la solicitud'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al procesar la solicitud'
+                });
+            });
+    }
 </script>
-{% endblock %} 
+{% endblock %}

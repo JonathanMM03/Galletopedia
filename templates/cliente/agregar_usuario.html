@@ -1,50 +1,171 @@
 {% extends "layoutIntranet.html" %}
 
 {% block content %}
+<style>
+    :root {
+        --color-principal: #A67C52;
+        --color-secundario: #8B5E3B;
+        --color-fondo: #F5DEB3;
+        --color-fondo-claro: #FFF8E8;
+        --color-texto: #5A3921;
+    }
+
+    .custom-card {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+
+    .custom-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(166, 124, 82, 0.15);
+    }
+
+    .custom-header {
+        background-color: var(--color-principal);
+        color: white;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .custom-form-label {
+        color: var(--color-secundario);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .custom-form-control {
+        border: 1px solid rgba(166, 124, 82, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        background-color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .custom-form-control:focus {
+        border-color: var(--color-secundario);
+        box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.15);
+        outline: none;
+    }
+
+    .custom-btn {
+        background-color: var(--color-principal);
+        border: none;
+        color: white;
+        border-radius: 8px;
+        padding: 0.65rem 1.75rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .custom-btn:hover {
+        background-color: var(--color-secundario);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 10px rgba(166, 124, 82, 0.2);
+    }
+
+    .btn-outline-custom {
+        border: 1px solid var(--color-principal);
+        color: var(--color-principal);
+        border-radius: 8px;
+        padding: 0.65rem 1.75rem;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .btn-outline-custom:hover {
+        background-color: var(--color-principal);
+        color: white;
+    }
+
+    .card-body {
+        background-color: white;
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-text {
+        color: var(--color-secundario);
+        opacity: 0.7;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .form-title {
+        color: var(--color-secundario);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        font-size: 1.25rem;
+    }
+</style>
+
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Registrar Usuario</h5>
+    <div class="card custom-card">
+        <div class="card-header custom-header">
+            <h5 class="mb-0">
+                <i class="bi bi-person-plus me-2"></i>Registrar Nuevo Usuario
+            </h5>
         </div>
         <div class="card-body">
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                <div class="form-group">
+                    <label for="nombre" class="custom-form-label">
+                        <i class="bi bi-person-fill me-1"></i>Nombre Completo
+                    </label>
+                    <input type="text" class="custom-form-control" id="nombre" name="nombre" required>
                 </div>
 
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                <div class="form-group">
+                    <label for="email" class="custom-form-label">
+                        <i class="bi bi-envelope-fill me-1"></i>Correo Electrónico
+                    </label>
+                    <input type="email" class="custom-form-control" id="email" name="email" required>
+                    <small class="form-text">Ejemplo: usuario@dominio.com</small>
                 </div>
 
-                <div class="mb-3">
-                    <label for="tipo_usuario" class="form-label">Tipo de Usuario</label>
-                    <select class="form-select" id="tipo_usuario" name="tipo_usuario" required>
+                <div class="form-group">
+                    <label for="tipo_usuario" class="custom-form-label">
+                        <i class="bi bi-person-badge-fill me-1"></i>Tipo de Usuario
+                    </label>
+                    <select class="custom-form-control" id="tipo_usuario" name="tipo_usuario" required>
                         {% for tipo in tipos_usuario %}
                         <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                <div class="form-group">
+                    <label for="password" class="custom-form-label">
+                        <i class="bi bi-lock-fill me-1"></i>Contraseña
+                    </label>
+                    <input type="password" class="custom-form-control" id="password" name="password" required>
+                    <small class="form-text">Mínimo 8 caracteres</small>
                 </div>
 
-                <div class="mb-3">
-                    <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
-                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                <div class="form-group">
+                    <label for="confirm_password" class="custom-form-label">
+                        <i class="bi bi-lock-fill me-1"></i>Confirmar Contraseña
+                    </label>
+                    <input type="password" class="custom-form-control" id="confirm_password" name="confirm_password" required>
                 </div>
 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{{ url_for('cliente.index') }}" class="btn btn-secondary me-md-2">
-                        Cancelar
+                <div class="d-flex justify-content-end mt-4 pt-2">
+                    <a href="{{ url_for('cliente.index') }}" class="btn btn-outline-custom me-3">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary">
-                        Registrar Usuario
+                    <button type="submit" class="btn custom-btn">
+                        <i class="bi bi-check-circle me-1"></i>Registrar Usuario
                     </button>
                 </div>
             </form>

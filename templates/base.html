@@ -52,7 +52,7 @@
                                 <a class="nav-link" href="{{ url_for('informe.index') }}">Informes</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('pedidos.index') }}">Pedidos</a>
+                                <a class="nav-link" href="{{ url_for('pedidos.pedidos') }}">Pedidos</a>
                             </li>
                         {% elif current_user.tipo_usuario_id == 2 %}  <!-- Producción -->
                             <li class="nav-item">
@@ -72,11 +72,11 @@
                                 <a class="nav-link" href="{{ url_for('ventas.index') }}">Ventas</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('pedidos.index') }}">Pedidos</a>
+                                <a class="nav-link" href="{{ url_for('pedidos.pedidos') }}">Pedidos</a>
                             </li>
                         {% elif current_user.tipo_usuario_id == 3 %}  <!-- Cliente -->
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('pedidos.index') }}">Mis Pedidos</a>
+                                <a class="nav-link" href="{{ url_for('pedidos.pedidos') }}">Mis Pedidos</a>
                             </li>
                         {% endif %}
                     {% endif %}

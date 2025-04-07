@@ -1,155 +1,399 @@
 {% extends "layoutIntranet.html" %}
 
 {% block styles %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 <!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
+    :root {
+        --color-principal: #A67C52;
+        --color-secundario: #8B5E3B;
+        --color-fondo: #F5DEB3;
+        --color-fondo-claro: #FFF8E8;
+        --color-texto: #5A3921;
+    }
+
     @media print {
         .no-print {
             display: none !important;
         }
+
         .print-only {
             display: block !important;
         }
+
         body {
             padding: 0;
             margin: 0;
+            background-color: white;
         }
+
         .container {
             width: 100%;
             max-width: 100%;
             padding: 0;
             margin: 0;
         }
-        .navbar, footer {
-            display: none !important;
+
+        .card {
+            box-shadow: none !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
     }
-    .print-only {
-        display: none;
-    }
+
     .print-header {
         display: none;
     }
+
     @media print {
         .print-header {
-            display: block;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--color-principal);
         }
+
         .print-logo {
-            max-width: 150px;
-            margin-bottom: 10px;
+            max-width: 120px;
+        }
+
+        .print-title {
+            color: var(--color-secundario);
+            font-size: 1.5rem;
+        }
+
+        .print-date {
+            color: var(--color-texto);
+            font-size: 0.9rem;
         }
     }
+
+    h2 {
+        color: var(--color-secundario);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(166, 124, 82, 0.2);
+    }
+
+    .card-header {
+        background-color: var(--color-principal);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-bottom: none;
+    }
+
+    .card-header h4 {
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: var(--color-secundario);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(166, 124, 82, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--color-principal);
+        box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+    }
+
+    .form-control:hover {
+        border-color: var(--color-principal);
+    }
+
+    .btn {
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background-color: var(--color-principal);
+        border-color: var(--color-principal);
+    }
+
+    .btn-primary:hover {
+        background-color: var(--color-secundario);
+        border-color: var(--color-secundario);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 94, 59, 0.2);
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+    }
+
+    .btn-secondary {
+        background-color: white;
+        border-color: var(--color-principal);
+        color: var(--color-principal);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--color-fondo);
+        border-color: var(--color-secundario);
+        color: var(--color-secundario);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 94, 59, 0.1);
+    }
+
     .btn-download {
-        margin-right: 5px;
-        margin-bottom: 5px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card {
+        border-radius: 10px;
+        padding: 1.5rem;
+        color: white;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card h5 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .stat-card p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background-color: var(--color-principal);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 500;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:nth-child(even) {
+        background-color: var(--color-fondo-claro);
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(166, 124, 82, 0.1);
+    }
+
+    .table td,
+    .table th {
+        vertical-align: middle;
+        border-top: 1px solid rgba(166, 124, 82, 0.1);
+        padding: 0.75rem 1rem;
+    }
+
+    .alert {
+        border-radius: 10px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+        background-color: var(--color-principal);
+        color: white;
+        border-bottom: none;
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    @media (max-width: 768px) {
+        .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-download {
+            margin-right: 0;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Corte de Ventas</h2>
-    
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="bi bi-graph-up"></i> Corte de Ventas
+            </h2>
+        </div>
+    </div>
+
+
+    <!-- Formulario de filtros -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="POST" class="mb-4">
                 {{ form.csrf_token }}
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="form-group">
-                            {{ form.fecha_inicio.label }}
+                        <div class="mb-3">
+                            {{ form.fecha_inicio.label(class="form-label") }}
                             <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
                                 {{ form.fecha_inicio(class="form-control", type="date", id="fecha_inicio") }}
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
-                            {{ form.fecha_fin.label }}
+                        <div class="mb-3">
+                            {{ form.fecha_fin.label(class="form-label") }}
                             <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
                                 {{ form.fecha_fin(class="form-control", type="date", id="fecha_fin") }}
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mt-3">
                     <div class="col-md-6">
-                        <div class="form-group">
-                            {{ form.efectivo_caja.label }}
-                            {{ form.efectivo_caja(class="form-control", type="number", step="0.01") }}
+                        <div class="mb-3">
+                            {{ form.efectivo_caja.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">$</span>
+                                {{ form.efectivo_caja(class="form-control", type="number", step="0.01",
+                                placeholder="0.00") }}
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
-                            {{ form.observaciones.label }}
-                            {{ form.observaciones(class="form-control") }}
+                        <div class="mb-3">
+                            {{ form.observaciones.label(class="form-label") }}
+                            {{ form.observaciones(class="form-control", placeholder="Observaciones del corte") }}
                         </div>
                     </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        {{ form.buscar(class="btn btn-primary") }}
-                        {{ form.procesar(class="btn btn-success") }}
-                        <button type="button" class="btn btn-danger" id="descargar-pdf">
-                            <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap">
+                            {{ form.buscar(class="btn btn-primary me-2 mb-2") }}
+                            {{ form.procesar(class="btn btn-success me-2 mb-2") }}
+                            <button type="button" class="btn btn-danger me-2 mb-2" id="descargar-pdf">
+                                <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
                             </button>
-                        <button type="button" class="btn btn-success" id="descargar-excel">
-                            <i class="bi bi-file-earmark-excel"></i> Descargar Excel
+                            <button type="button" class="btn btn-success me-2 mb-2" id="descargar-excel">
+                                <i class="bi bi-file-earmark-excel"></i> Descargar Excel
                             </button>
+                        </div>
                     </div>
                 </div>
             </form>
 
 
-            <div class="row">
+            <!-- Estadísticas -->
+            <div class="row g-4">
                 <div class="col-md-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Ventas</h5>
-                            <p class="card-text">${{ "%.2f"|format(ventas_hoy) }}</p>
-                        </div>
+                    <div class="stat-card bg-primary">
+                        <h5>Total Ventas</h5>
+                        <p>${{ "%.2f"|format(ventas_hoy) }}</p>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Número de Ventas</h5>
-                            <p class="card-text">{{ num_ventas }}</p>
-                        </div>
+                    <div class="stat-card bg-success">
+                        <h5>Número de Ventas</h5>
+                        <p>{{ num_ventas }}</p>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Productos</h5>
-                            <p class="card-text">{{ total_productos }}</p>
-                        </div>
+                    <div class="stat-card bg-info">
+                        <h5>Total Productos</h5>
+                        <p>{{ total_productos }}</p>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Período Seleccionado</h5>
-                            <p class="card-text">{{ fecha_inicio.strftime('%d/%m/%Y') }} - {{ fecha_fin.strftime('%d/%m/%Y') }}</p>
-                        </div>
+                    <div class="stat-card bg-warning">
+                        <h5>Período Seleccionado</h5>
+                        <p>{{ fecha_inicio.strftime('%d/%m/%Y') }} - {{ fecha_fin.strftime('%d/%m/%Y') }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+
     <div class="card">
         <div class="card-header">
-            <h4>Últimas Ventas del Período</h4>
+            <h4 class="mb-0">
+                <i class="bi bi-receipt"></i> Últimas Ventas del Período
+            </h4>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped">
-                    <thead class="bg-choco text-white">
+                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>Fecha</th>
@@ -182,53 +426,53 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-    $(document).ready(function(){
+    $(document).ready(function () {
         // Establecer valores predeterminados para los campos de fecha
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
-        
+
         // Para fecha_inicio, establecer el primer día del mes actual
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const firstDayStr = firstDayOfMonth.toISOString().split('T')[0];
-        
+
         // Establecer valores diferentes para cada campo
         $('#fecha_inicio').val(firstDayStr);
         $('#fecha_fin').val(todayStr);
-        
+
         // Función para descargar en PDF
-        $('#descargar-pdf').on('click', function() {
+        $('#descargar-pdf').on('click', function () {
             // Obtener las fechas seleccionadas
             var fechaInicio = $('#fecha_inicio').val();
             var fechaFin = $('#fecha_fin').val();
-            
+
             // Crear un nuevo documento PDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Título del informe
             doc.setFontSize(18);
             doc.text('Corte de Ventas', 14, 20);
             doc.setFontSize(14);
             doc.text(`Período: ${fechaInicio} al ${fechaFin}`, 14, 30);
-            
+
             // Información general
             doc.setFontSize(12);
-            doc.text(`Total Ventas: ${{ "%.2f"|format(ventas_hoy) }}`, 14, 40);
+            doc.text(`Total Ventas: ${{ "%.2f"| format(ventas_hoy) }}`, 14, 40);
             doc.text(`Número de Ventas: {{ num_ventas }}`, 14, 50);
             doc.text(`Total Productos: {{ total_productos }}`, 14, 60);
-            
+
             // Tabla de ventas
             const table = document.querySelector('.table');
             const rows = table.querySelectorAll('tr');
-            
+
             const tableData = [];
             const headers = [];
-            
+
             // Obtener encabezados
             rows[0].querySelectorAll('th').forEach(header => {
                 headers.push(header.textContent);
             });
-            
+
             // Obtener datos
             for (let i = 1; i < rows.length; i++) {
                 const rowData = [];
@@ -237,7 +481,7 @@
                 });
                 tableData.push(rowData);
             }
-            
+
             // Agregar tabla al PDF
             doc.autoTable({
                 head: [headers],
@@ -247,26 +491,26 @@
                 styles: { fontSize: 8 },
                 headStyles: { fillColor: [66, 139, 202] }
             });
-            
+
             // Guardar el PDF
             doc.save(`corte_ventas_${fechaInicio}_${fechaFin}.pdf`);
         });
 
         // Función para descargar en Excel
-        $('#descargar-excel').on('click', function() {
+        $('#descargar-excel').on('click', function () {
             // Obtener las fechas seleccionadas
             var fechaInicio = $('#fecha_inicio').val();
             var fechaFin = $('#fecha_fin').val();
-            
+
             // Crear un nuevo libro de Excel
             const wb = XLSX.utils.book_new();
-            
+
             // Obtener datos de la tabla
             const table = document.querySelector('.table');
             const rows = table.querySelectorAll('tr');
-            
+
             const tableData = [];
-            
+
             // Obtener encabezados y datos
             rows.forEach(row => {
                 const rowData = [];
@@ -275,7 +519,7 @@
                 });
                 tableData.push(rowData);
             });
-            
+
             // Agregar información general
             const infoGeneral = [
                 ['Corte de Ventas'],
@@ -286,35 +530,35 @@
                 ['Total Productos', '{{ total_productos }}'],
                 ['']
             ];
-            
+
             // Combinar información general con datos de la tabla
             const allData = [...infoGeneral, ...tableData];
-            
+
             // Crear una hoja de cálculo
             const ws = XLSX.utils.aoa_to_sheet(allData);
-            
+
             // Agregar la hoja al libro
             XLSX.utils.book_append_sheet(wb, ws, 'Corte de Ventas');
-            
+
             // Guardar el archivo Excel
             XLSX.writeFile(wb, `corte_ventas_${fechaInicio}_${fechaFin}.xlsx`);
         });
-        
+
         // Función para mostrar el modal de confirmación de corte
-        $('#procesar').on('click', function(e) {
+        $('#procesar').on('click', function (e) {
             e.preventDefault();
-            
+
             // Obtener valores del formulario
             const fechaInicio = $('#fecha_inicio').val();
             const fechaFin = $('#fecha_fin').val();
             const efectivoCaja = parseFloat($('#efectivo_caja').val()) || 0;
             const observaciones = $('#observaciones').val();
-            
+
             // Verificar si hay diferencia entre efectivo y ventas
-            const diferencia = Math.abs(efectivoCaja - {{ "%.2f"|format(ventas_hoy) }});
-            
-            // Crear el modal de confirmación
-            let modalHtml = `
+            const diferencia = Math.abs(efectivoCaja - {{ "%.2f"| format(ventas_hoy) }});
+
+        // Crear el modal de confirmación
+        let modalHtml = `
                 <div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-labelledby="modalConfirmacionLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -334,19 +578,19 @@
                                     <p><strong>Observaciones:</strong> <span id="observacionesInfo">${observaciones || 'Ninguna'}</span></p>
                                 </div>
             `;
-            
-            // Agregar alerta si hay diferencia entre efectivo y ventas
-            if (diferencia > 0.01) {
-                modalHtml += `
+
+        // Agregar alerta si hay diferencia entre efectivo y ventas
+        if (diferencia > 0.01) {
+            modalHtml += `
                     <div class="alert alert-warning" id="diferenciaAlert">
                         <i class="bi bi-exclamation-triangle-fill"></i> 
                         <strong>¡Atención!</strong> Hay una diferencia de $${diferencia.toFixed(2)} entre el efectivo en caja y el total de ventas.
                     </div>
                 `;
-            }
-            
-            // Cerrar el modal
-            modalHtml += `
+        }
+
+        // Cerrar el modal
+        modalHtml += `
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -356,25 +600,25 @@
                     </div>
                 </div>
             `;
-            
-            // Eliminar modal anterior si existe
-            $('#modalConfirmacion').remove();
-            
-            // Agregar el nuevo modal al body
-            $('body').append(modalHtml);
-            
-            // Mostrar el modal
-            const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
-            modal.show();
-        });
+
+        // Eliminar modal anterior si existe
+        $('#modalConfirmacion').remove();
+
+        // Agregar el nuevo modal al body
+        $('body').append(modalHtml);
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+        modal.show();
     });
-    
+    });
+
     // Función para confirmar el corte
     function confirmarCorte() {
         // Cerrar el modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion'));
         modal.hide();
-        
+
         // Mostrar el botón de procesar y hacer clic en él
         $('#procesar').show().click();
     }

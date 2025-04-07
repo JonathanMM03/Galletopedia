@@ -2,50 +2,150 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Editar Usuario</h5>
+    <!-- Estilos personalizados -->
+    <style>
+        :root {
+            --color-principal: #A67C52;
+            --color-secundario: #8B5E3B;
+            --color-fondo: #F5DEB3;
+            --color-fondo-claro: #FFF8E8;
+            --color-texto: #5A3921;
+        }
+        
+        .custom-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background-color: white; /* Fondo blanco para la tarjeta */
+        }
+        
+        .custom-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(166, 124, 82, 0.15);
+        }
+        
+        .custom-header {
+            background-color: var(--color-principal);
+            color: white;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+        }
+        
+        .custom-form-label {
+            color: var(--color-secundario);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .custom-form-control {
+            border: 1px solid var(--color-principal);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            background-color: white; /* Fondo blanco para los inputs */
+            transition: all 0.3s ease;
+        }
+        
+        .custom-form-control:focus {
+            border-color: var(--color-secundario);
+            box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+        }
+        
+        .form-text {
+            color: var(--color-secundario);
+            opacity: 0.8;
+            font-size: 0.85rem;
+        }
+        
+        .custom-btn {
+            background-color: var(--color-principal);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-btn:hover {
+            background-color: var(--color-secundario);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 10px rgba(166, 124, 82, 0.2);
+            color: white;
+        }
+        
+        .btn-outline-custom {
+            border: 1px solid var(--color-principal);
+            color: var(--color-principal);
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-custom:hover {
+            background-color: var(--color-principal);
+            color: white;
+        }
+        
+        .card-body {
+            background-color: white; /* Fondo blanco para el cuerpo */
+            padding: 2rem;
+        }
+    </style>
+
+    <div class="card custom-card">
+        <div class="card-header custom-header">
+            <h5 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>Editar Usuario
+            </h5>
         </div>
         <div class="card-body">
             <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" 
-                           value="{{ usuario.nombre }}" required>
+                <div class="mb-4">
+                    <label for="nombre" class="form-label custom-form-label">
+                        <i class="bi bi-person-fill me-1"></i>Nombre
+                    </label>
+                    <input type="text" class="form-control custom-form-control" id="nombre" name="nombre" 
+                           value="carlos lopez" required>
                 </div>
                 
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email"
-                           value="{{ usuario.email }}" required>
+                <div class="mb-4">
+                    <label for="email" class="form-label custom-form-label">
+                        <i class="bi bi-envelope-fill me-1"></i>Email
+                    </label>
+                    <input type="email" class="form-control custom-form-control" id="email" name="email"
+                           value="correodegabo@gmail.com" required>
                 </div>
                 
-                <div class="mb-3">
-                    <label for="tipo_usuario" class="form-label">Tipo de Usuario</label>
-                    <select class="form-select" id="tipo_usuario" name="tipo_usuario" required>
-                        {% for tipo in tipos_usuario %}
-                        <option value="{{ tipo.id }}" 
-                                {% if tipo.id == usuario.tipo_usuario_id %}selected{% endif %}>
-                            {{ tipo.nombre }}
-                        </option>
-                        {% endfor %}
+                <div class="mb-4">
+                    <label for="tipo_usuario" class="form-label custom-form-label">
+                        <i class="bi bi-person-badge-fill me-1"></i>Tipo de Usuario
+                    </label>
+                    <select class="form-select custom-form-control" id="tipo_usuario" name="tipo_usuario" required>
+                        <option value="1" selected>cliente</option>
+                        <option value="2">administrador</option>
+                        <option value="3">empleado</option>
                     </select>
                 </div>
                 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Nueva Contraseña (opcional)</label>
-                    <input type="password" class="form-control" id="password" name="password">
-                    <div class="form-text">Dejar en blanco para mantener la contraseña actual</div>
+                <div class="mb-4">
+                    <label for="password" class="form-label custom-form-label">
+                        <i class="bi bi-lock-fill me-1"></i>Nueva Contraseña (opcional)
+                    </label>
+                    <input type="password" class="form-control custom-form-control" id="password" name="password">
+                    <div class="form-text">
+                        <i class="bi bi-info-circle-fill me-1"></i>Dejar en blanco para mantener la contraseña actual
+                    </div>
                 </div>
                 
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="{{ url_for('cliente.index') }}" class="btn btn-secondary me-md-2">
-                        Cancelar
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{{ url_for('cliente.index') }}" class="btn btn-outline-custom me-md-2">
+                        <i class="bi bi-x-circle-fill me-1"></i>Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary">
-                        Guardar Cambios
+                    <button type="submit" class="btn custom-btn">
+                        <i class="bi bi-check-circle-fill me-1"></i>Guardar Cambios
                     </button>
                 </div>
             </form>

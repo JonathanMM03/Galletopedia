@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, Usuarios, TipoUsuario
 from forms import formLogin, formRegistro, formCambiarPassword
 from services.logger_service import log_user_action, log_error, log_security_event
+from flask_wtf import FlaskForm
 import logging
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth', static_folder='../static')
@@ -29,6 +30,13 @@ def login():
             
         usuario = Usuarios.query.filter_by(email=form.email.data).first()
         if usuario and check_password_hash(usuario.password_hash, form.password.data):
+            # Verificar si el usuario está activo
+            if usuario.estatus != 1:
+                # Registrar intento de inicio de sesión de usuario inactivo
+                log_security_event('login_inactive_user', {'email': usuario.email})
+                flash('Tu cuenta está inactiva. Por favor, contacta al administrador.', 'error')
+                return redirect(url_for('auth.login'))
+                
             login_user(usuario)
             
             # Registrar inicio de sesión exitoso
@@ -141,7 +149,7 @@ def perfil():
 @auth_bp.route('/eliminar-cuenta', methods=['GET', 'POST'])
 @login_required
 def eliminar_cuenta():
-    form = forms.FlaskForm()  # Crear un formulario vacío para el token CSRF
+    form = FlaskForm()  # Crear un formulario vacío para el token CSRF
     
     if request.method == 'POST':
         # Cambiar el estatus del usuario a 0 (inactivo)

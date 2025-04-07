@@ -1,16 +1,74 @@
 {% extends "layout.html" %}
 
 {% block content %}
-    
-<div class="container-fluid text-center mt-5 py-5">
-    <h1 class="display-1 fw-bold text-danger">404</h1>
-    <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 5rem;"></i>
-    <h2 class="text-dark mt-3">Oops... Página no encontrada</h2>
-    <p class="text-muted fs-4">Lo sentimos, la página que buscas no existe o ha sido movida.</p>
-    
-    <a href="{{ url_for('index') }}" class="btn btn-lg btn-outline-success mt-3">
-        <i class="bi bi-house-door-fill"></i> Volver al inicio
-    </a>
-</div>
+<div class="container-fluid d-flex flex-column justify-content-center align-items-center min-vh-100 bg-beige-light py-5">
+    <div class="text-center px-4" style="max-width: 600px;">
+        <!-- Ilustración SVG personalizada -->
+        <div class="mb-4">
+            <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#A67C52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 8V12" stroke="#A67C52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 16H12.01" stroke="#A67C52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        
+        <!-- Mensaje de error -->
+        <h1 class="display-3 fw-bold text-marron mb-3">404</h1>
+        <h2 class="h3 text-marron mb-4">¡Ups! Página no encontrada</h2>
+        
+        <p class="lead text-muted mb-4">
+            Lo sentimos, no pudimos encontrar la página que buscas. 
+            Puede que haya sido movida o eliminada.
+        </p>
+        
+        <!-- Botón de acción -->
+        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('main.index') }}" class="btn btn-marron btn-lg px-4 gap-3">
+                <i class="bi bi-house-door-fill me-2"></i> Volver al inicio
+            </a>
+        </div>
 
+<style>
+    :root {
+        --color-marron: #A67C52;
+        --color-marron-oscuro: #8B5E3B;
+        --color-beige: #F5DEB3;
+        --color-beige-light: #FFF8E8;
+    }
+    
+    .bg-beige-light {
+        background-color: var(--color-beige-light);
+    }
+    
+    .text-marron {
+        color: var(--color-marron);
+    }
+    
+    .btn-marron {
+        background-color: var(--color-marron);
+        border-color: var(--color-marron);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-marron:hover {
+        background-color: var(--color-marron-oscuro);
+        border-color: var(--color-marron-oscuro);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-marron {
+        color: var(--color-marron);
+        border-color: var(--color-marron);
+    }
+    
+    .btn-outline-marron:hover {
+        background-color: var(--color-marron);
+        color: white;
+    }
+    
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+</style>
 {% endblock %}

@@ -1,69 +1,279 @@
 {% extends "layoutIntranet.html" %}
 {% from "proveedores/_formulario_proveedor.html" import render_field %}
 {% block content %}
+<style>
+  :root {
+    --color-principal: #A67C52;
+    --color-secundario: #8B5E3B;
+    --color-fondo: #F5DEB3;
+    --color-fondo-claro: #FFF8E8;
+    --color-texto: #5A3921;
+  }
+
+  .form-container {
+    background-color: var(--color-fondo-claro);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(166, 124, 82, 0.1);
+  }
+
+  h2 {
+    color: var(--color-secundario);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  h2::before {
+    content: "\F4E4";
+    font-family: "bootstrap-icons";
+    font-size: 1.75rem;
+  }
+
+  h5.text-choco {
+    color: var(--color-secundario);
+    font-weight: 600;
+    margin: 1.5rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  h5.text-choco::before {
+    content: "\F4C8";
+    font-family: "bootstrap-icons";
+    font-size: 1.25rem;
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: var(--color-secundario);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid rgba(166, 124, 82, 0.3);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.2);
+  }
+
+  textarea.form-control {
+    min-height: 120px;
+  }
+
+  hr {
+    border-top: 2px solid var(--color-principal);
+    opacity: 0.2;
+    margin: 2rem 0;
+  }
+
+  .ingrediente-item {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(166, 124, 82, 0.1);
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(166, 124, 82, 0.05);
+  }
+
+  .btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-secondary {
+    background-color: var(--color-fondo);
+    color: var(--color-secundario);
+    border: none;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-principal);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(166, 124, 82, 0.2);
+  }
+
+  .btn-success {
+    background-color: var(--color-secundario);
+    border: none;
+  }
+
+  .btn-success:hover {
+    background-color: #7a4f2f;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(139, 94, 59, 0.2);
+  }
+
+  .btn-outline-secondary {
+    border-color: var(--color-principal);
+    color: var(--color-principal);
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: var(--color-principal);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .form-container {
+      padding: 1.5rem;
+    }
+    
+    .ingrediente-item .col-md-5,
+    .ingrediente-item .col-md-4,
+    .ingrediente-item .col-md-3 {
+      margin-bottom: 1rem;
+    }
+    
+    .d-flex.justify-content-between {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
 <div class="container my-4">
-  <h2 class="mb-4">Crear Nueva Receta</h2>
-  <form method="POST" enctype="multipart/form-data">
-    {{ form.csrf_token }}
-    <div class="mb-3">
-      {{ render_field(form.nombre) }}
-    </div>
-    <div class="row">
-      <div class="col-md-4 mb-3">
-        {{ render_field(form.gramaje_por_galleta) }}
+  <div class="form-container">
+    <h2><i class="bi bi-journal-plus"></i> Crear Nueva Receta</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.csrf_token }}
+      
+      <div class="mb-4">
+        <label class="form-label"><i class="bi bi-card-text"></i> Nombre de la receta</label>
+        {{ form.nombre(class="form-control") }}
       </div>
-      <div class="col-md-4 mb-3">
-        {{ render_field(form.galletas_por_lote) }}
+      
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <label class="form-label"><i class="bi bi-scale"></i> Gramaje por galleta (g)</label>
+          {{ form.gramaje_por_galleta(class="form-control") }}
+        </div>
+        <div class="col-md-4 mb-4">
+          <label class="form-label"><i class="bi bi-collection"></i> Galletas por lote</label>
+          {{ form.galletas_por_lote(class="form-control") }}
+        </div>
+        <div class="col-md-4 mb-4">
+          <label class="form-label"><i class="bi bi-currency-dollar"></i> Costo por galleta</label>
+          {{ form.costo_por_galleta(class="form-control") }}
+        </div>
       </div>
-      <div class="col-md-4 mb-3">
-        {{ render_field(form.costo_por_galleta) }}
+      
+      <div class="mb-4">
+        <label class="form-label"><i class="bi bi-tag"></i> Precio de venta</label>
+        {{ form.precio_venta(class="form-control") }}
       </div>
-    </div>
-    <div class="mb-3">
-      {{ render_field(form.precio_venta) }}
-    </div>
-    <div class="mb-3">
-      {{ render_field(form.pasos) }}
-    </div>
-    <div class="mb-3">
-      {{ render_field(form.imagen) }}
-    </div>
+      
+      <div class="mb-4">
+        <label class="form-label"><i class="bi bi-list-ol"></i> Pasos de preparación</label>
+        {{ form.pasos(class="form-control") }}
+      </div>
+      
+      <div class="mb-4">
+        <label class="form-label"><i class="bi bi-image"></i> Imagen de la receta</label>
+        {{ form.imagen(class="form-control") }}
+      </div>
 
-    <hr>
-    <h5 class="text-choco">Ingredientes</h5>
-    <div id="contenedor-ingredientes">
-      {% for ingrediente_form in form.ingredientes %}
-      <div class="row mb-3 ingrediente-item">
-        <div class="col-md-5">
-          {{ render_field(ingrediente_form.insumo_id) }}
+      <hr>
+      
+      <h5 class="text-choco"><i class="bi bi-basket"></i> Ingredientes</h5>
+      
+      <div id="contenedor-ingredientes">
+        {% for ingrediente_form in form.ingredientes %}
+        <div class="row mb-3 ingrediente-item">
+          <div class="col-md-5">
+            <label class="form-label"><i class="bi bi-box-seam"></i> Insumo</label>
+            {{ ingrediente_form.insumo_id(class="form-select") }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="bi bi-123"></i> Cantidad</label>
+            {{ ingrediente_form.cantidad_necesaria(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label"><i class="bi bi-rulers"></i> Unidad</label>
+            {{ ingrediente_form.unidad(class="form-control", readonly=true) }}
+          </div>
         </div>
-        <div class="col-md-4">
-          {{ render_field(ingrediente_form.cantidad_necesaria) }}
-        </div>
-        <div class="col-md-3">
-          {{ render_field(ingrediente_form.unidad) }}
-        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
-    <div class="d-flex justify-content-end mb-3">
-      <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAgregarIngrediente">+ Añadir ingrediente</button>
-    </div>
+      
+      <div class="d-flex justify-content-end mb-4">
+        <button type="button" class="btn btn-outline-secondary" id="btnAgregarIngrediente">
+          <i class="bi bi-plus-circle"></i> Añadir ingrediente
+        </button>
+      </div>
 
-    <div class="d-flex justify-content-between">
-      <a href="{{ url_for('recetas.index') }}" class="btn btn-secondary">Cancelar</a>
-      <button type="submit" class="btn btn-success">Guardar Receta</button>
-    </div>
-  </form>
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('recetas.index') }}" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-check-circle"></i> Guardar Receta
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
 <script>
 document.getElementById('btnAgregarIngrediente').addEventListener('click', () => {
   const container = document.getElementById('contenedor-ingredientes');
   const items = container.querySelectorAll('.ingrediente-item');
-  const nuevo = items[0].cloneNode(true);
-  nuevo.querySelectorAll('input, select').forEach(el => el.value = '');
+  const nuevo = items[items.length - 1].cloneNode(true);
+  
+  // Limpiar valores del nuevo ingrediente
+  nuevo.querySelectorAll('input, select').forEach(el => {
+    el.value = '';
+    // Remover clases de validación si existen
+    el.classList.remove('is-valid', 'is-invalid');
+  });
+  
+  // Remover mensajes de error si existen
+  const invalidFeedbacks = nuevo.querySelectorAll('.invalid-feedback');
+  invalidFeedbacks.forEach(fb => fb.remove());
+  
   container.appendChild(nuevo);
+  
+  // Scroll al nuevo elemento
+  nuevo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+// Actualizar unidad cuando se selecciona un insumo
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.matches('select[name$="insumo_id"]')) {
+    const select = e.target;
+    const unidadField = select.closest('.ingrediente-item').querySelector('input[name$="unidad"]');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (selectedOption && selectedOption.dataset.unidad) {
+      unidadField.value = selectedOption.dataset.unidad;
+    }
+  }
 });
 </script>
 {% endblock %}

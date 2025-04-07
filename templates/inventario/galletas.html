@@ -4,16 +4,60 @@
 
 {% block styles %}
 <style>
-.galletas-container {
+:root {
+    --color-marron: #A67C52;
+    --color-marron-oscuro: #8B5E3B;
+    --color-beige: #F5DEB3;
+    --color-beige-claro: #FFF8E8;
+    --color-texto: #5A3921;
+}
+
+/* Estilos generales */
+.container {
+    max-width: 1200px;
     padding: 20px;
 }
 
+h2 {
+    color: var(--color-marron-oscuro);
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Encabezado */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: var(--color-beige);
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    border-bottom: 3px solid var(--color-marron);
+}
+
+.btn-volver {
+    background-color: var(--color-marron-oscuro);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-volver:hover {
+    background-color: var(--color-marron);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(166, 124, 82, 0.2);
+}
+
+/* Tarjetas de galletas */
 .galleta-card {
     border: none;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(166, 124, 82, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
     overflow: hidden;
     background: white;
     height: 100%;
@@ -22,20 +66,30 @@
 }
 
 .galleta-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 8px 25px rgba(166, 124, 82, 0.15);
 }
 
 .galleta-imagen {
-    height: 200px;
+    height: 220px;
     object-fit: cover;
     width: 100%;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.imagen-placeholder {
+    height: 220px;
+    background-color: var(--color-beige-claro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-marron);
+    font-size: 3rem;
 }
 
 .galleta-body {
-    padding: 20px;
+    padding: 1.5rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -44,147 +98,185 @@
 .galleta-header {
     display: flex;
     justify-content: space-between;
-    align-items: start;
-    margin-bottom: 15px;
+    align-items: flex-start;
+    margin-bottom: 1rem;
 }
 
 .galleta-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 600;
     margin: 0;
-    color: #333;
+    color: var(--color-marron-oscuro);
 }
 
 .galleta-badge {
     font-size: 0.8rem;
-    padding: 5px 10px;
+    padding: 0.35rem 0.75rem;
     border-radius: 20px;
+    font-weight: 500;
+}
+
+.badge-activo {
+    background-color: #5cb85c;
+}
+
+.badge-inactivo {
+    background-color: #d9534f;
 }
 
 .galleta-info {
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
 }
 
 .galleta-info-item {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(166, 124, 82, 0.1);
 }
 
 .galleta-info-label {
-    font-weight: 600;
-    color: #555;
+    font-weight: 500;
+    color: var(--color-marron);
 }
 
 .galleta-info-value {
-    color: #333;
+    font-weight: 500;
+    color: var(--color-texto);
 }
 
 .galleta-stock {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
 }
 
 .galleta-stock-icon {
-    margin-left: 8px;
+    margin-left: 0.5rem;
     font-size: 1.2rem;
 }
 
 .galleta-footer {
     margin-top: auto;
-    padding-top: 15px;
+    padding-top: 1rem;
 }
 
 .solicitar-btn {
     width: 100%;
     border-radius: 8px;
-    padding: 10px;
-    font-weight: 600;
+    padding: 0.75rem;
+    font-weight: 500;
     transition: all 0.3s ease;
+    background-color: var(--color-marron);
+    border: none;
+    color: white;
 }
 
 .solicitar-btn:hover {
+    background-color: var(--color-marron-oscuro);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(166, 124, 82, 0.2);
 }
 
-.modal-fullscreen {
-    padding: 0 !important;
-}
-
-.modal-fullscreen .modal-content {
-    height: 100vh;
-    border: 0;
-    border-radius: 0;
-}
-
-.modal-fullscreen .modal-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.modal-fullscreen .modal-body {
-    overflow-y: auto;
-}
-
-.close-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    background: white;
+/* Modal */
+.modal-content {
     border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.close-button:hover {
-    background-color: #f8f9fa;
+.modal-header {
+    background-color: var(--color-marron);
+    color: white;
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
 }
 
-.filtros-container {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.modal-title {
+    font-weight: 500;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--color-marron-oscuro);
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 1px solid rgba(166, 124, 82, 0.3);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+}
+
+.form-control:focus {
+    border-color: var(--color-marron);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.2);
+}
+
+.btn-modal {
+    padding: 0.65rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-modal:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .galleta-card {
+        margin-bottom: 1.25rem;
+    }
+    
+    .galleta-body {
+        padding: 1.25rem;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Galletas</h2>
-        <a href="{{ url_for('inventario.index') }}" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left"></i> Volver a Inventario
+    <!-- Encabezado -->
+    <div class="header-container">
+        <h2>
+            <i class="bi bi-basket me-2"></i>Gestión de Galletas
+        </h2>
+        <a href="{{ url_for('inventario.index') }}" class="btn btn-volver">
+            <i class="bi bi-arrow-left me-1"></i> Volver a Inventario
         </a>
     </div>
 
-    <div class="row">
+    <!-- Grid de galletas -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for receta in recetas %}
-        <div class="col-md-4 mb-4">
+        <div class="col">
             <div class="card galleta-card">
                 {% if receta.imagen %}
                 <img src="data:image/jpeg;base64,{{ receta.imagen }}" class="galleta-imagen" alt="{{ receta.nombre }}">
                 {% else %}
-                <div class="galleta-imagen bg-light d-flex align-items-center justify-content-center">
-                    <i class="fas fa-cookie fa-3x text-muted"></i>
+                <div class="imagen-placeholder">
+                    <i class="bi bi-cookie"></i>
                 </div>
                 {% endif %}
                 <div class="galleta-body">
                     <div class="galleta-header">
                         <h5 class="galleta-title">{{ receta.nombre }}</h5>
-                        <span class="badge galleta-badge {% if receta.estatus == 1 %}bg-success{% else %}bg-danger{% endif %}">
+                        <span class="badge galleta-badge {% if receta.estatus == 1 %}badge-activo{% else %}badge-inactivo{% endif %}">
                             {% if receta.estatus == 1 %}Activo{% else %}Inactivo{% endif %}
                         </span>
                     </div>
@@ -210,16 +302,16 @@
                         <span class="galleta-info-label">Existencia:</span>
                         <span class="galleta-info-value">{{ receta.cantidad_disponible }} galletas</span>
                         {% if receta.cantidad_disponible <= 50 %}
-                            <i class="fas fa-exclamation-triangle text-danger galleta-stock-icon" title="¡Urgencia! Stock muy bajo"></i>
+                            <i class="bi bi-exclamation-triangle-fill text-danger galleta-stock-icon" title="¡Urgencia! Stock muy bajo"></i>
                         {% elif receta.cantidad_disponible <= 100 %}
-                            <i class="fas fa-exclamation-circle text-warning galleta-stock-icon" title="Advertencia: Stock bajo"></i>
+                            <i class="bi bi-exclamation-circle-fill text-warning galleta-stock-icon" title="Advertencia: Stock bajo"></i>
                         {% endif %}
                     </div>
                     <div class="galleta-footer">
-                        <button class="btn btn-primary solicitar-btn" 
+                        <button class="btn solicitar-btn" 
                                 data-receta-id="{{ receta.id }}"
                                 data-receta-nombre="{{ receta.nombre }}">
-                            Solicitar Lote de Galletas
+                            <i class="bi bi-cart-plus me-1"></i>Solicitar Lote
                         </button>
                     </div>
                 </div>
@@ -231,27 +323,33 @@
 
 <!-- Modal Solicitar Lote de Galletas -->
 <div class="modal fade" id="solicitarLoteModal" tabindex="-1" aria-labelledby="solicitarLoteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="solicitarLoteModalLabel">Solicitar Lote de Galletas</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="solicitarLoteModalLabel">
+                    <i class="bi bi-cart-plus me-2"></i>Solicitar Lote de Galletas
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method="POST" action="{{ url_for('inventario.solicitar_galletas') }}" id="formSolicitarGalletas">
                     {{ form.csrf_token }}
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <label class="form-label">Receta Seleccionada</label>
-                        <p id="receta-nombre" class="form-control-static"></p>
+                        <p id="receta-nombre" class="form-control-plaintext fw-bold" style="color: var(--color-marron-oscuro);"></p>
                         {{ form.receta_id }}
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-4">
                         {{ form.cantidad.label(class="form-label") }}
                         {{ form.cantidad(class="form-control") }}
                     </div>
-                    <div class="text-end">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        {{ form.submit(class="btn btn-primary") }}
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary btn-modal" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-modal">
+                            <i class="bi bi-check-circle me-1"></i>Confirmar
+                        </button>
                     </div>
                 </form>
             </div>
@@ -282,4 +380,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-{% endblock %} 
+{% endblock %}

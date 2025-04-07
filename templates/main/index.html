@@ -1,6 +1,20 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<div class="hero-section">
+    <div class="hero-image"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center">
+        <h1 class="hero-title">Crumbella 🍪</h1>
+        <p class="hero-subtitle">Galletas con tradición, amor y sabor</p>
+        <div class="hero-info">
+            <p><i class="pi pi-clock me-2"></i>TE ATENDEMOS DE LUNES A SÁBADO DE 9AM A 8PM</p>
+            <p>ACÉRCATE Y DESCUBRE NUESTRAS CREACIONES IRRESISTIBLES</p>
+        </div>
+    </div>
+</div>
+
+<!-- Contenedor de productos -->
 <div class="container mt-5">
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% if products %}
@@ -9,9 +23,106 @@
             {% endfor %}
         {% else %}
             <div class="col-12 text-center">
-                <h3>No hay recetas disponibles en este momento</h3>
+                <h3 class="text-brown">No hay recetas disponibles en este momento</h3>
             </div>
         {% endif %}
     </div>
 </div>
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .hero-section {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .hero-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-image: url("{{ url_for('static', filename='../../static/css/img/galleta_background.jpg.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: 1;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        z-index: 2;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 3;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 4.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.8rem;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+        margin-bottom: 2rem;
+    }
+
+    .hero-info {
+        background-color: rgba(166, 124, 82, 0.85);
+        padding: 1.5rem 2rem;
+        border-radius: 8px;
+        max-width: 800px;
+    }
+
+    .hero-info p {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 3rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+        }
+
+        .hero-info {
+            padding: 1rem;
+            width: 90%;
+        }
+
+        .hero-info p {
+            font-size: 1rem;
+        }
+    }
+</style>
 {% endblock %}

@@ -1,74 +1,140 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="container text-center">
-    <div class="row align-items-center">
-        <div class="col-md-6 p-4">
-            <h1 class="card-title">{{ receta.nombre }}</h1>
-
-            <!-- Formulario para seleccionar tipo de pedido -->
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                <input type="hidden" name="receta_id" value="{{ receta.id }}">
-
-                <label for="tipoVenta" class="fw-bold">Selecciona una opción:</label>
-                <select name="tipoVenta" class="form-select" onchange="this.form.submit()">
-                    <option value="1" {% if tipoVenta=="1" or not tipoVenta %}selected{% endif %}>Por pieza</option>
-                    <option value="2" {% if tipoVenta=="2" %}selected{% endif %}>Por caja</option>
-                </select>
-            </form>
-
-
-
-            {% if tipoVenta == "1" %}
-            <div class="mt-3">
-                <!-- Menú para "Por pieza" -->
-                <form action="{{ url_for('main.confirmacionVenta') }}" method="POST">
-                    {{ form.hidden_tag() }}
-
-                    <h3>Compra por pieza</h3>
-
-                    <p class="card-price">${{ receta.precio_venta }} MXN la pieza</p>
-                    <input type="hidden" name="receta_id" value="{{ receta.id }}">
-                    <input type="hidden" name="tipoVenta" value="{{ tipoVenta}}">
-                    <label for="cantidadPieza">Cantidad:</label>
-                    <input type="number" name="cantidad" class="form-control" min="1" value="1">
-                    <br>
-                    <button class="btn  btn-outline-primary" type="submit">Pedir</button>
-                </form>
+<div class="container my-5">
+    <div class="row g-5 align-items-center">
+        <!-- Columna de la imagen -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+                {% if receta.imagen %}
+                <img src="data:image/jpeg;base64,{{ receta.imagen }}" class="img-fluid w-100" alt="{{ receta.nombre }}" style="height: 400px; object-fit: cover;">
+                {% else %}
+                <img src="{{ url_for('static', filename='img/galleta_default.jpeg') }}" class="img-fluid w-100" alt="Sin imagen" style="height: 400px; object-fit: cover;">
+                {% endif %}
+                <div class="card-img-overlay bg-dark-gradient d-flex align-items-end">
+                    <h2 class="text-white mb-0">{{ receta.nombre }}</h2>
+                </div>
             </div>
-            {% endif %}
-
-            <!-- Menú para "Por caja" -->
-            {% if tipoVenta == "2" %}
-            <div class="mt-3">
-                <!-- Menú para "Por pieza" -->
-                <form action="{{ url_for('main.confirmacionVenta') }}" method="POST">
-                    {{ form.hidden_tag() }}
-
-                    <h3>Compra por pieza</h3>
-
-                    <p class="card-price">${{ receta.precio_venta }} MXN la pieza</p>
-                    <input type="hidden" name="receta_id" value="{{ receta.id }}">
-                    <input type="hidden" name="tipoVenta" value="{{ tipoVenta}}">
-                    <label for="cantidadPieza">Cantidad de cajas:</label>
-                    <input type="number" name="cantidad" class="form-control" min="1" value="1">
-                    <br>
-                    <button class="btn  btn-outline-primary" type="submit">Pedir</button>
-                </form>
-            </div>
-            {% endif %}
         </div>
 
-        <div class="col-md-6">
-            {% if receta.imagen %}
-            <img src="data:image/jpeg;base64,{{ receta.imagen }}" class="img-fluid rounded shadow"
-                alt="{{ receta.nombre }}" height="400px">
-            {% else %}
-            <img src="{{ url_for('static', filename='img/galleta_default.jpeg') }}" class="img-fluid rounded shadow"
-                alt="Sin imagen" height="400px">
-            {% endif %}
+        <!-- Columna del formulario -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-body p-4">
+                    <!-- Formulario para seleccionar tipo de pedido -->
+                    <form method="POST" class="mb-4">
+                        {{ form.hidden_tag() }}
+                        <input type="hidden" name="receta_id" value="{{ receta.id }}">
+
+                        <div class="mb-3">
+                            <label for="tipoVenta" class="form-label fw-bold text-marron">
+                                <i class="bi bi-box-seam me-2"></i>Tipo de pedido
+                            </label>
+                            <select name="tipoVenta" class="form-select form-select-lg" onchange="this.form.submit()">
+                                <option value="1" {% if tipoVenta=="1" or not tipoVenta %}selected{% endif %}>Por pieza</option>
+                                <option value="2" {% if tipoVenta=="2" %}selected{% endif %}>Por caja</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <!-- Formulario de compra -->
+                    <div class="border-top pt-4">
+                        {% if tipoVenta == "1" %}
+                        <form action="{{ url_for('main.confirmacionVenta') }}" method="POST">
+                            {{ form.hidden_tag() }}
+                            <h4 class="fw-bold text-marron mb-3">
+                                <i class="bi bi-cart-plus me-2"></i>Compra por pieza
+                            </h4>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="fs-4 fw-bold text-marron">${{ receta.precio_venta }} MXN</span>
+                                <span class="ms-2 text-muted">/ pieza</span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="cantidadPieza" class="form-label fw-semibold">Cantidad:</label>
+                                <input type="number" name="cantidad" class="form-control form-control-lg" min="1" value="1">
+                            </div>
+                            
+                            <input type="hidden" name="receta_id" value="{{ receta.id }}">
+                            <input type="hidden" name="tipoVenta" value="{{ tipoVenta}}">
+                            
+                            <button class="btn btn-marron btn-lg w-100 py-3 fw-bold" type="submit">
+                                <i class="bi bi-bag-check me-2"></i>Agregar al pedido
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        {% if tipoVenta == "2" %}
+                        <form action="{{ url_for('main.confirmacionVenta') }}" method="POST">
+                            {{ form.hidden_tag() }}
+                            <h4 class="fw-bold text-marron mb-3">
+                                <i class="bi bi-box-seam me-2"></i>Compra por caja
+                            </h4>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="fs-4 fw-bold text-marron">${{ receta.precio_venta }} MXN</span>
+                                <span class="ms-2 text-muted">/ caja</span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="cantidadPieza" class="form-label fw-semibold">Cantidad de cajas:</label>
+                                <input type="number" name="cantidad" class="form-control form-control-lg" min="1" value="1">
+                            </div>
+                            
+                            <input type="hidden" name="receta_id" value="{{ receta.id }}">
+                            <input type="hidden" name="tipoVenta" value="{{ tipoVenta}}">
+                            
+                            <button class="btn btn-marron btn-lg w-100 py-3 fw-bold" type="submit">
+                                <i class="bi bi-bag-check me-2"></i>Agregar al pedido
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    :root {
+        --color-marron: #A67C52;
+        --color-marron-oscuro: #8B5E3B;
+        --color-beige: #F5DEB3;
+    }
+    
+    .bg-dark-gradient {
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    }
+    
+    .text-marron {
+        color: var(--color-marron);
+    }
+    
+    .btn-marron {
+        background-color: var(--color-marron);
+        border-color: var(--color-marron);
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-marron:hover {
+        background-color: var(--color-marron-oscuro);
+        border-color: var(--color-marron-oscuro);
+        transform: translateY(-2px);
+    }
+    
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(166, 124, 82, 0.15) !important;
+    }
+    
+    .form-select:focus, .form-control:focus {
+        border-color: var(--color-marron);
+        box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+    }
+</style>
 {% endblock %}

@@ -2,44 +2,187 @@
 
 {% block title %}Registrar Producción{% endblock %}
 
+{% block styles %}
+<style>
+  :root {
+    --color-principal: #A67C52;
+    --color-secundario: #8B5E3B;
+    --color-fondo: #F5DEB3;
+    --color-fondo-claro: #FFF8E8;
+    --color-texto: #5A3921;
+  }
+
+  .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(166, 124, 82, 0.2);
+  }
+
+  .card-header {
+    background-color: var(--color-principal);
+    color: white;
+    padding: 1.25rem;
+    border-bottom: none;
+  }
+
+  .card-title {
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: var(--color-secundario);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(166, 124, 82, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+  }
+
+  .form-control:hover, .form-select:hover {
+    border-color: var(--color-principal);
+  }
+
+  .invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background-color: var(--color-principal);
+    border-color: var(--color-principal);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-secundario);
+    border-color: var(--color-secundario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 94, 59, 0.2);
+  }
+
+  .btn-secondary {
+    background-color: white;
+    border-color: var(--color-principal);
+    color: var(--color-principal);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-fondo);
+    border-color: var(--color-secundario);
+    color: var(--color-secundario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 94, 59, 0.1);
+  }
+
+  .buttons-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 576px) {
+    .buttons-container {
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-industry me-2"></i>Registrar Producción
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="bi bi-clipboard2-plus-fill"></i>Registrar Producción
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST">
+                    <form method="POST" novalidate>
                         {{ form.csrf_token }}
-                        <div class="mb-3">
+                        
+                        <!-- Campo Producto -->
+                        <div class="mb-4">
                             {{ form.producto_id.label(class="form-label") }}
-                            {{ form.producto_id(class="form-select") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-box-seam"></i>
+                                </span>
+                                {{ form.producto_id(class="form-select") }}
+                            </div>
                             {% if form.producto_id.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.producto_id.errors %}
-                                {{ error }}
+                                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
                                 {% endfor %}
                             </div>
                             {% endif %}
                         </div>
-                        <div class="mb-3">
+                        
+                        <!-- Campo Cantidad -->
+                        <div class="mb-4">
                             {{ form.cantidad.label(class="form-label") }}
-                            {{ form.cantidad(class="form-control", type="number", min="1") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-123"></i>
+                                </span>
+                                {{ form.cantidad(class="form-control", type="number", min="1", placeholder="Ingrese la cantidad producida") }}
+                            </div>
                             {% if form.cantidad.errors %}
                             <div class="invalid-feedback d-block">
                                 {% for error in form.cantidad.errors %}
-                                {{ error }}
+                                <i class="bi bi-exclamation-circle-fill me-1"></i>{{ error }}
                                 {% endfor %}
                             </div>
                             {% endif %}
                         </div>
-                        <div class="d-grid gap-2">
+                        
+                        <!-- Botones -->
+                        <div class="buttons-container">
                             {{ form.submit(class="btn btn-primary") }}
-                            <a href="{{ url_for('produccion.index') }}" class="btn btn-secondary">Cancelar</a>
+                            <a href="{{ url_for('produccion.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -47,4 +190,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

@@ -7,66 +7,211 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
 
+{% block styles %}
+<style>
+  :root {
+    --color-principal: #A67C52;
+    --color-secundario: #8B5E3B;
+    --color-fondo: #F5DEB3;
+    --color-fondo-claro: #FFF8E8;
+    --color-texto: #5A3921;
+  }
+
+  .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(166, 124, 82, 0.2);
+  }
+
+  h2 {
+    color: var(--color-secundario);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .form-label {
+    font-weight: 500;
+    color: var(--color-secundario);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(166, 124, 82, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+  }
+
+  .form-control:hover, .form-select:hover {
+    border-color: var(--color-principal);
+  }
+
+  .input-group-text {
+    background-color: var(--color-fondo-claro);
+    border-color: rgba(166, 124, 82, 0.3);
+    color: var(--color-texto);
+    min-width: 100px;
+  }
+
+  .text-muted {
+    color: var(--color-principal) !important;
+    font-size: 0.875rem;
+  }
+
+  .btn {
+    border-radius: 10px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background-color: var(--color-principal);
+    border-color: var(--color-principal);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-secundario);
+    border-color: var(--color-secundario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 94, 59, 0.2);
+  }
+
+  .btn-secondary {
+    background-color: white;
+    border-color: var(--color-principal);
+    color: var(--color-principal);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-fondo);
+    border-color: var(--color-secundario);
+    color: var(--color-secundario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 94, 59, 0.1);
+  }
+
+  .buttons-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 768px) {
+    .buttons-container {
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row mb-4">
-        <div class="col-md-6">
-            <h2 class="mb-3">
-                <i class="fas fa-shopping-cart text-primary"></i> Solicitar Insumos
+        <div class="col-12">
+            <h2>
+                <i class="bi bi-cart-plus-fill"></i>Solicitar Insumos
             </h2>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
-                    <form id="formSolicitarInsumo" method="POST">
+                    <form id="formSolicitarInsumo" method="POST" novalidate>
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         
-                        <div class="mb-3">
+                        <!-- Campo Insumo -->
+                        <div class="mb-4">
                             <label for="insumo_id" class="form-label">Insumo</label>
-                            <select class="form-select" id="insumo_id" name="insumo_id" required>
-                                <option value="">Seleccione un insumo</option>
-                                {% for insumo in insumos %}
-                                <option value="{{ insumo.id }}" 
-                                        data-unidad="{{ insumo.unidad }}"
-                                        data-proveedores='{{ insumo.proveedores|tojson }}'>
-                                    {{ insumo.nombre }} (Total: {{ insumo.total }} {{ insumo.unidad }})
-                                </option>
-                                {% endfor %}
-                            </select>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-box-seam"></i>
+                                </span>
+                                <select class="form-select" id="insumo_id" name="insumo_id" required>
+                                    <option value="">Seleccione un insumo</option>
+                                    {% for insumo in insumos %}
+                                    <option value="{{ insumo.id }}" 
+                                            data-unidad="{{ insumo.unidad }}"
+                                            data-proveedores='{{ insumo.proveedores|tojson }}'>
+                                        {{ insumo.nombre }} (Disponible: {{ insumo.total }} {{ insumo.unidad }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
+                        <!-- Campo Proveedor -->
+                        <div class="mb-4">
                             <label for="proveedor_id" class="form-label">Proveedor</label>
-                            <select class="form-select" id="proveedor_id" name="proveedor_id" required disabled>
-                                <option value="">Primero seleccione un insumo</option>
-                            </select>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-truck"></i>
+                                </span>
+                                <select class="form-select" id="proveedor_id" name="proveedor_id" required disabled>
+                                    <option value="">Primero seleccione un insumo</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
+                        <!-- Campo Cantidad -->
+                        <div class="mb-4">
                             <label for="cantidad_solicitada" class="form-label">Cantidad Solicitada</label>
                             <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-123"></i>
+                                </span>
                                 <input type="number" class="form-control" id="cantidad_solicitada" 
-                                       name="cantidad_solicitada" min="1" max="100" required>
+                                       name="cantidad_solicitada" min="1" max="100" required
+                                       placeholder="Ingrese la cantidad">
                                 <span class="input-group-text" id="unidad_insumo">unidades</span>
                             </div>
                             <small class="text-muted">La cantidad debe estar entre 1 y 100 unidades</small>
                         </div>
 
-                        <div class="mb-3">
+                        <!-- Campo Fecha -->
+                        <div class="mb-4">
                             <label for="fecha_pedido" class="form-label">Fecha de Pedido</label>
-                            <input type="date" class="form-control" id="fecha_pedido" 
-                                   name="fecha_pedido" required>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent">
+                                    <i class="bi bi-calendar-event"></i>
+                                </span>
+                                <input type="date" class="form-control" id="fecha_pedido" 
+                                       name="fecha_pedido" required>
+                            </div>
                         </div>
 
-                        <div class="text-end">
-                            <a href="{{ url_for('produccion.index') }}" class="btn btn-secondary me-2">
-                                <i class="fas fa-times"></i> Cancelar
+                        <!-- Botones -->
+                        <div class="buttons-container">
+                            <a href="{{ url_for('produccion.index') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Registrar Pedido
+                                <i class="bi bi-save-fill"></i> Registrar Pedido
                             </button>
                         </div>
                     </form>
@@ -75,6 +220,7 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 {{ super() }}
@@ -84,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fechaPedido = document.getElementById('fecha_pedido');
     const today = new Date().toISOString().split('T')[0];
     fechaPedido.min = today;
+    fechaPedido.value = today;
 
     // Elementos del formulario
     const insumoSelect = document.getElementById('insumo_id');
@@ -183,4 +330,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-{% endblock %} 

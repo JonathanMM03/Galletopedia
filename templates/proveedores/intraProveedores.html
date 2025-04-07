@@ -2,26 +2,97 @@
 {% from "proveedores/_formulario_proveedor.html" import render_field %}
 {% block content %}
 
+<style>
+  :root {
+    --color-principal: #A67C52;
+    --color-secundario: #8B5E3B;
+    --color-fondo: #F5DEB3;
+    --color-fondo-claro: #FFF8E8;
+    --color-texto: #5A3921;
+  }
+
+  .bg-choco {
+    background-color: var(--color-principal);
+  }
+
+  .bg-choco-dark {
+    background-color: var(--color-secundario);
+  }
+
+  .bg-beige {
+    background-color: var(--color-fondo);
+  }
+
+  .bg-light-beige {
+    background-color: var(--color-fondo-claro);
+  }
+
+  .text-choco {
+    color: var(--color-secundario);
+  }
+
+  .card, .modal-content {
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+    transition: all 0.3s ease;
+  }
+
+
+
+  .btn-choco {
+    background-color: var(--color-principal);
+    color: white;
+    border: none;
+  }
+
+  .btn-choco:hover {
+    background-color: var(--color-secundario);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(139, 94, 59, 0.2);
+  }
+
+  .table thead th {
+    background-color: var(--color-secundario);
+    color: white;
+  }
+
+  .table tbody tr:nth-child(even) {
+    background-color: var(--color-fondo-claro);
+  }
+
+  .badge-status {
+    background-color: var(--color-fondo);
+    color: var(--color-secundario);
+    font-weight: 500;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+  }
+</style>
+
 <div class="container mt-4">
 
   <!-- Buscador y Agregar botón -->
   <div class="card mb-4 border-0">
     <div class="card-header bg-choco text-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Buscar Proveedores</h5>
+      <h5 class="mb-0"><i class="bi bi-search me-2"></i>Buscar Proveedores</h5>
       <button type="button" class="btn btn-light text-choco fw-bold" data-bs-toggle="modal"
         data-bs-target="#modalAgregarProveedor">
-        + Agregar Proveedor
+        <i class="bi bi-plus-circle me-2"></i>Agregar Proveedor
       </button>
     </div>
     <div class="card-body bg-beige">
       <form method="GET" class="row g-3">
         <div class="col-md-6">
-          <label for="nombre" class="form-label">Nombre del proveedor</label>
+          <label for="nombre" class="form-label"><i class="bi bi-building me-1"></i>Nombre del proveedor</label>
           <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Buscar por cualquier campo..."
             value="{{ request.args.get('nombre', '') }}">
         </div>
         <div class="col-md-4">
-          <label for="estatus" class="form-label">Estatus</label>
+          <label for="estatus" class="form-label"><i class="bi bi-toggle-on me-1"></i>Estatus</label>
           <select name="estatus" id="estatus" class="form-select">
             <option value="">Todos</option>
             <option value="1" {% if request.args.get('estatus')=='1' %}selected{% endif %}>Activos</option>
@@ -29,7 +100,9 @@
           </select>
         </div>
         <div class="col-md-2 d-flex align-items-end">
-          <button type="submit" class="btn bg-choco text-white w-100">Buscar</button>
+          <button type="submit" class="btn btn-choco w-100">
+            <i class="bi bi-search me-1"></i>Buscar
+          </button>
         </div>
       </form>
     </div>
@@ -38,19 +111,19 @@
   <!-- Tabla de resultados -->
   <div class="card border-0">
     <div class="card-header bg-choco text-white">
-      <h5 class="mb-0">Proveedores Disponibles</h5>
+      <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Proveedores Disponibles</h5>
     </div>
     <div class="table-responsive">
       <table class="table align-middle m-0">
-        <thead class="bg-choco text-white">
+        <thead class="bg-choco-dark text-white">
           <tr>
-            <th>Empresa</th>
-            <th>Promotor</th>
-            <th>Teléfono</th>
-            <th>Email</th>
-            <th>Dirección</th>
-            <th>Estatus</th>
-            <th>Acciones</th>
+            <th><i class="bi bi-building me-1"></i>Empresa</th>
+            <th><i class="bi bi-person-badge me-1"></i>Promotor</th>
+            <th><i class="bi bi-telephone me-1"></i>Teléfono</th>
+            <th><i class="bi bi-envelope me-1"></i>Email</th>
+            <th><i class="bi bi-geo-alt me-1"></i>Dirección</th>
+            <th><i class="bi bi-info-circle me-1"></i>Estatus</th>
+            <th><i class="bi bi-gear me-1"></i>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -63,27 +136,27 @@
             <td>{{ p.calle }}, {{ p.colonia }}, #{{ p.numero }}, CP {{ p.cp }}</td>
             <td>
               {% if p.estatus == 1 %}
-              <span class="badge bg-success">Activo</span>
+              <span class="badge badge-status"><i class="bi bi-check-circle me-1"></i>Activo</span>
               {% else %}
-              <span class="badge bg-danger">Inactivo</span>
+              <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
               {% endif %}
             </td>
             <td>
               <div class="d-flex gap-2">
                 <a href="{{ url_for('proveedores.editar_vista', id=p.id) }}" class="btn btn-sm btn-warning">
-                  Editar
+                  <i class="bi bi-pencil-square me-1"></i>Editar
                 </a>
                 {% if p.estatus == 1 %}
                 <!-- Botón para dar de baja -->
                 <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal"
                   data-bs-target="#modalBajaProveedor{{ p.id }}">
-                  Dar de baja
+                  <i class="bi bi-person-dash me-1"></i>Dar de baja
                 </button>
                 {% else %}
                 <!-- Botón para reactivar -->
                 <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
                   data-bs-target="#modalBajaProveedor{{ p.id }}">
-                  Activar
+                  <i class="bi bi-person-check me-1"></i>Activar
                 </button>
                 {% endif %}
               </div>
@@ -95,7 +168,7 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
               <div class="modal-content border-0">
                 <div class="modal-header bg-choco text-white">
-                  <h5 class="modal-title" id="modalProveedorTitle">Editar Proveedor</h5>
+                  <h5 class="modal-title" id="modalProveedorTitle"><i class="bi bi-pencil-square me-2"></i>Editar Proveedor</h5>
                   <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <form id="formProveedor" method="POST">
@@ -103,9 +176,13 @@
                   <div class="modal-body bg-beige" id="modalProveedorBody">
                     <!-- Contenido dinámico se insertará aquí -->
                   </div>
-                  <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">Guardar</button>
+                  <div class="modal-footer bg-light-beige">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                      <i class="bi bi-check-circle me-1"></i>Guardar
+                    </button>
                   </div>
                 </form>
               </div>
@@ -119,7 +196,11 @@
               <div class="modal-content border-0">
                 <div class="modal-header bg-choco text-white">
                   <h5 class="modal-title" id="bajaLabel{{ p.id }}">
-                    {% if p.estatus == 1 %} Confirmar Baja {% else %} Activar Proveedor {% endif %}
+                    {% if p.estatus == 1 %} 
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Baja 
+                    {% else %} 
+                    <i class="bi bi-arrow-repeat me-2"></i>Activar Proveedor 
+                    {% endif %}
                   </h5>
                   <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
@@ -134,10 +215,16 @@
                       {% endif %}
                     </p>
                   </div>
-                  <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <div class="modal-footer bg-light-beige">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </button>
                     <button type="submit" class="btn {% if p.estatus == 1 %}btn-danger{% else %}btn-success{% endif %}">
-                      {% if p.estatus == 1 %}Dar de baja{% else %}Activar{% endif %}
+                      {% if p.estatus == 1 %}
+                      <i class="bi bi-person-dash me-1"></i>Dar de baja
+                      {% else %}
+                      <i class="bi bi-person-check me-1"></i>Activar
+                      {% endif %}
                     </button>
                   </div>
                 </form>
@@ -159,7 +246,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0">
       <div class="modal-header bg-choco text-white">
-        <h5 class="modal-title" id="modalProveedorLabel">Agregar Nuevo Proveedor</h5>
+        <h5 class="modal-title" id="modalProveedorLabel"><i class="bi bi-person-plus me-2"></i>Agregar Nuevo Proveedor</h5>
         <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <form id="formCrearProveedor" method="POST" action="{{ url_for('proveedores.crear') }}">
@@ -182,14 +269,22 @@
             {{ render_field(form.numero) }}
           </div>
         </div>
-        <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-success">Guardar</button>
+        <div class="modal-footer bg-light-beige">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle me-1"></i>Cancelar
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle me-1"></i>Guardar
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<!-- Bootstrap Icons CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("formCrearProveedor");
@@ -227,10 +322,8 @@
               input.parentNode.appendChild(div);
             }
           }
-
         });
     });
   });
-
 </script>
 {% endblock %}

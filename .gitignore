@@ -5,5 +5,3 @@
 **/__pycache__/
 /legacy
 logs/
-
-config.py

@@ -143,7 +143,7 @@ def eliminar_insumo(nombre_insumo):
         
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f'Error al eliminar insumo {nombre_insumo}: {str(e)}')
+        current_app.logger.error(f'Error al eliminar insumo {nombre_insumo}: {str(e)}')
         return jsonify({
             'success': False,
             'message': f'Error al eliminar el insumo: {str(e)}'
@@ -182,7 +182,7 @@ def editar_insumo(nombre_insumo):
         
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f'Error al editar insumo {nombre_insumo}: {str(e)}')
+        current_app.logger.error(f'Error al editar insumo {nombre_insumo}: {str(e)}')
         flash(f'Error al editar el insumo: {str(e)}', 'danger')
         return redirect(url_for('inventario.gestion_insumos'))
 
@@ -1139,7 +1139,7 @@ def gestion_insumos():
                 except Exception as e:
                     db.session.rollback()
                     flash(f'Error al agregar el insumo: {str(e)}', 'danger')
-                    app.logger.error(f'Error al agregar insumo: {str(e)}')
+                    current_app.logger.error(f'Error al agregar insumo: {str(e)}')
             
             elif form_type == 'categoria' and form_categoria.validate_on_submit():
                 try:
@@ -1152,7 +1152,7 @@ def gestion_insumos():
                 except Exception as e:
                     db.session.rollback()
                     flash(f'Error al agregar la categoría: {str(e)}', 'danger')
-                    app.logger.error(f'Error al agregar categoría: {str(e)}')
+                    current_app.logger.error(f'Error al agregar categoría: {str(e)}')
         
         return render_template('inventario/gestion_insumos.html',
                              form_insumo=form_insumo,
@@ -1165,7 +1165,7 @@ def gestion_insumos():
                              filtro_categoria=filtro_categoria,
                              filtro_lote=filtro_lote)
     except Exception as e:
-        app.logger.error(f'Error en gestion_insumos: {str(e)}')
+        current_app.logger.error(f'Error en gestion_insumos: {str(e)}')
         flash(f'Error al cargar la página: {str(e)}', 'danger')
         return redirect(url_for('inventario.index'))
 
@@ -1300,11 +1300,11 @@ def insumos_por_tipo(tipo_id):
         }
         
         # Registrar la respuesta en el log
-        app.logger.info(f"Respuesta de insumos_por_tipo: {respuesta}")
+        current_app.logger.info(f"Respuesta de insumos_por_tipo: {respuesta}")
         
         return jsonify(respuesta)
     except Exception as e:
-        app.logger.error(f"Error al obtener insumos por tipo: {str(e)}")
+        current_app.logger.error(f"Error al obtener insumos por tipo: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'Error al obtener los insumos: {str(e)}'
@@ -1554,4 +1554,94 @@ def obtener_lotes_por_categoria(categoria_id):
         return jsonify({
             'success': False,
             'message': f'Error al obtener los lotes: {str(e)}'
+        }), 500
+
+@inventario_bp.route('/insumos/<int:insumo_id>/proveedores', methods=['GET'])
+@login_required
+@rol_requerido(1, 2)  # Admin y Producción
+def proveedores_por_insumo(insumo_id):
+    """
+    Endpoint para obtener los proveedores de un insumo específico usando la tabla insumo_proveedor
+    """
+    try:
+        # Verificar si el insumo existe
+        insumo = AdministracionInsumos.query.get(insumo_id)
+        if not insumo:
+            current_app.logger.error(f"Insumo con ID {insumo_id} no encontrado")
+            return jsonify({
+                'success': False,
+                'message': f'Insumo con ID {insumo_id} no encontrado'
+            }), 404
+
+        current_app.logger.info(f"Buscando proveedores para el insumo: {insumo.insumo_nombre} (ID: {insumo_id})")
+
+        # Obtener los proveedores que suministran este insumo
+        try:
+            # Primero verificar si hay registros en la tabla insumo_proveedor para este insumo
+            count = db.session.query(InsumoProveedor).filter(
+                InsumoProveedor.insumo_id == insumo_id
+            ).count()
+            
+            current_app.logger.info(f"Registros encontrados en insumo_proveedor: {count}")
+            
+            if count == 0:
+                current_app.logger.warning(f"No hay proveedores asociados al insumo ID {insumo_id}")
+                return jsonify({
+                    'success': True,
+                    'proveedores': []
+                })
+            
+            # Si hay registros, obtener los proveedores
+            proveedores = db.session.query(
+                Proveedores.id,
+                Proveedores.nombre_empresa,
+                InsumoProveedor.precio,
+                InsumoProveedor.unidad
+            ).join(
+                InsumoProveedor,
+                Proveedores.id == InsumoProveedor.proveedor_id
+            ).filter(
+                InsumoProveedor.insumo_id == insumo_id
+            ).all()
+        except Exception as e:
+            current_app.logger.error(f"Error en la consulta SQL: {str(e)}")
+            current_app.logger.exception("Detalles del error SQL:")
+            return jsonify({
+                'success': False,
+                'message': f'Error en la consulta SQL: {str(e)}'
+            }), 500
+
+        current_app.logger.info(f"Proveedores encontrados: {len(proveedores)}")
+        
+        # Formatear proveedores
+        proveedores_formateados = []
+        for p in proveedores:
+            try:
+                proveedor = {
+                    'id': p[0],
+                    'nombre': p[1],
+                    'precio': float(p[2]) if p[2] is not None else 0,
+                    'unidad': p[3] if p[3] is not None else ''
+                }
+                proveedores_formateados.append(proveedor)
+            except Exception as e:
+                current_app.logger.error(f"Error al formatear proveedor: {str(e)}")
+                continue
+        
+        # Preparar la respuesta
+        respuesta = {
+            'success': True,
+            'proveedores': proveedores_formateados
+        }
+        
+        # Registrar la respuesta en el log
+        current_app.logger.info(f"Respuesta de proveedores_por_insumo: {respuesta}")
+        
+        return jsonify(respuesta)
+    except Exception as e:
+        current_app.logger.error(f"Error al obtener proveedores por insumo: {str(e)}")
+        current_app.logger.exception("Detalles del error:")
+        return jsonify({
+            'success': False,
+            'message': f'Error al obtener los proveedores: {str(e)}'
         }), 500

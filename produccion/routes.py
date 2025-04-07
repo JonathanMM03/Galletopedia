@@ -742,7 +742,6 @@ def verificar_insumos_disponibles_receta(receta_id, cantidad_galletas):
                 ai.lote_id,
                 ai.cantidad_existente,
                 ai.fecha_caducidad,
-                ai.proveedor,
                 inec.cantidad_necesaria
             FROM administracion_insumos ai
             JOIN insumos_necesarios inec ON ai.insumo_nombre = inec.insumo_nombre AND ai.unidad = inec.unidad
@@ -766,24 +765,23 @@ def verificar_insumos_disponibles_receta(receta_id, cantidad_galletas):
                     JSON_OBJECT(
                         'lote_id', lote.lote_id,
                         'cantidad_actual', lote.cantidad_existente,
-                        'cantidad_a_usar', 
-                            CASE 
-                                WHEN lote.cantidad_existente >= inec.cantidad_necesaria 
-                                THEN inec.cantidad_necesaria 
-                                ELSE lote.cantidad_existente 
+                        'cantidad_a_usar',
+                            CASE
+                                WHEN lote.cantidad_existente >= inec.cantidad_necesaria
+                                THEN inec.cantidad_necesaria
+                                ELSE lote.cantidad_existente
                             END,
-                        'cantidad_despues', 
-                            CASE 
-                                WHEN lote.cantidad_existente >= inec.cantidad_necesaria 
-                                THEN lote.cantidad_existente - inec.cantidad_necesaria 
-                                ELSE 0 
+                        'cantidad_despues',
+                            CASE
+                                WHEN lote.cantidad_existente >= inec.cantidad_necesaria
+                                THEN lote.cantidad_existente - inec.cantidad_necesaria
+                                ELSE 0
                             END,
-                        'fecha_caducidad', DATE_FORMAT(lote.fecha_caducidad, '%d/%m/%Y'),
-                        'proveedor', lote.proveedor
+                        'fecha_caducidad', DATE_FORMAT(lote.fecha_caducidad, '%d/%m/%Y')
                     )
                 )
                 FROM lotes_detalle lote
-                WHERE lote.insumo_nombre = inec.insumo_nombre 
+                WHERE lote.insumo_nombre = inec.insumo_nombre
                 AND lote.unidad = inec.unidad
                 AND lote.cantidad_existente > 0
             ) AS lotes_seleccionados
@@ -819,7 +817,7 @@ def verificar_insumos_disponibles_receta(receta_id, cantidad_galletas):
             if not row.hay_suficientes:
                 hay_suficientes_insumos = False
         
-        return jsonify({
+        return {
             'success': True,
             'receta': {
                 'id': receta.id,
@@ -830,7 +828,7 @@ def verificar_insumos_disponibles_receta(receta_id, cantidad_galletas):
             'cantidad_ajustada': cantidad_galletas,
             'hay_suficientes_insumos': hay_suficientes_insumos,
             'insumos': insumos
-        })
+        }
         
     except Exception as e:
         print(f"Error al verificar insumos disponibles: {str(e)}")
@@ -1340,119 +1338,111 @@ def previsualizar_produccion(receta_id, cantidad):
             'message': f'Error al previsualizar la producción: {str(e)}'
         }), 500
 
-@produccion_bp.route('/empezar_receta', methods=['POST'])
+@produccion_bp.route('/empezar_produccion/<int:receta_id>', methods=['POST'])
 @login_required
-def empezar_receta():
+def iniciar_produccion(receta_id):
     """
-    Endpoint para iniciar la producción de una receta, descontando los insumos de los lotes especificados.
-    Recibe un JSON con la receta, cantidad y los lotes a utilizar.
+    Inicia la producción de una receta usando la cantidad de galletas por lote definida en la receta.
+    Descuenta los insumos del inventario en orden de menor a mayor fecha de caducidad.
     """
     try:
-        # Obtener datos del JSON
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({
-                'success': False,
-                'message': 'No se proporcionaron datos'
-            }), 400
-            
-        receta_id = data.get('receta_id')
-        cantidad = data.get('cantidad')
-        insumos = data.get('insumos', [])
-        
-        if not receta_id or not cantidad or not insumos:
-            return jsonify({
-                'success': False,
-                'message': 'Faltan datos requeridos (receta_id, cantidad o insumos)'
-            }), 400
-            
         # Obtener la receta
         receta = Recetas.query.get_or_404(receta_id)
+        current_app.logger.info(f"Iniciando producción para receta: {receta.nombre} (ID: {receta_id})")
         
-        # Ajustar la cantidad según el tamaño del lote
-        cantidad_ajustada = math.ceil(cantidad / receta.galletas_por_lote) * receta.galletas_por_lote
+        # Usar la cantidad de galletas por lote de la receta
+        cantidad = receta.galletas_por_lote
+        current_app.logger.info(f"Cantidad a producir: {cantidad} galletas")
         
-        # Verificar que todos los insumos tengan suficientes lotes
-        for insumo in insumos:
-            if not insumo.get('lotes_seleccionados'):
-                return jsonify({
-                    'success': False,
-                    'message': f'No se especificaron lotes para el insumo {insumo.get("nombre")}'
-                }), 400
-                
-            # Verificar que la suma de las cantidades a usar sea suficiente
-            cantidad_total_lotes = sum(lote.get('cantidad_a_usar', 0) for lote in insumo.get('lotes_seleccionados', []))
-            if cantidad_total_lotes < insumo.get('cantidad_necesaria', 0):
-                return jsonify({
-                    'success': False,
-                    'message': f'La cantidad total de lotes ({cantidad_total_lotes}) para {insumo.get("nombre")} es insuficiente. Se necesitan {insumo.get("cantidad_necesaria")}'
-                }), 400
+        # Verificar si hay insumos suficientes usando la misma lógica que la previsualización
+        current_app.logger.info("Verificando insumos suficientes...")
+        resultado = verificar_insumos_disponibles_receta(receta_id, cantidad)
+        
+        if not resultado.get('hay_suficientes_insumos', False):
+            current_app.logger.warning("No hay suficientes insumos para producir")
+            return jsonify({
+                'success': False,
+                'message': 'No hay suficientes insumos para producir'
+            }), 400
+            
+        # Obtener los insumos necesarios
+        current_app.logger.info("Obteniendo insumos necesarios...")
+        insumos_requeridos = receta.obtener_insumos_necesarios(cantidad)
+        current_app.logger.info(f"Insumos requeridos: {insumos_requeridos}")
         
         # Descontar los insumos de los lotes
-        for insumo in insumos:
-            for lote in insumo.get('lotes_seleccionados', []):
-                lote_id = lote.get('lote_id')
-                cantidad_a_usar = lote.get('cantidad_a_usar', 0)
+        current_app.logger.info("Descontando insumos de los lotes...")
+        for insumo_id, cantidad_necesaria in insumos_requeridos.items():
+            current_app.logger.info(f"Procesando insumo ID: {insumo_id}, cantidad necesaria: {cantidad_necesaria}")
+            
+            # Obtener los lotes ordenados por fecha de caducidad
+            lotes = AdministracionInsumos.query.filter(
+                AdministracionInsumos.id == insumo_id,
+                AdministracionInsumos.cantidad_existente > 0,
+                or_(
+                    AdministracionInsumos.fecha_caducidad.is_(None),
+                    AdministracionInsumos.fecha_caducidad > datetime.now().date()
+                )
+            ).order_by(AdministracionInsumos.fecha_caducidad.asc()).all()
+            
+            current_app.logger.info(f"Lotes encontrados para insumo {insumo_id}: {len(lotes)}")
+            
+            cantidad_restante = cantidad_necesaria
+            
+            # Descontar de cada lote
+            for lote in lotes:
+                if cantidad_restante <= 0:
+                    break
+                    
+                cantidad_a_descontar = min(lote.cantidad_existente, cantidad_restante)
+                lote.cantidad_existente -= cantidad_a_descontar
+                cantidad_restante -= cantidad_a_descontar
                 
-                if not lote_id or cantidad_a_usar <= 0:
-                    continue
-                    
-                # Obtener el lote
-                lote_obj = AdministracionInsumos.query.filter_by(lote_id=lote_id).first()
-                if not lote_obj:
-                    return jsonify({
-                        'success': False,
-                        'message': f'Lote {lote_id} no encontrado'
-                    }), 404
-                    
-                # Verificar que haya suficiente cantidad
-                if lote_obj.cantidad_existente < cantidad_a_usar:
-                    return jsonify({
-                        'success': False,
-                        'message': f'No hay suficiente cantidad en el lote {lote_id}. Disponible: {lote_obj.cantidad_existente}, Solicitado: {cantidad_a_usar}'
-                    }), 400
-                    
-                # Descontar la cantidad
-                lote_obj.cantidad_existente -= cantidad_a_usar
+                current_app.logger.info(f"Descontado {cantidad_a_descontar} del lote {lote.lote_id}")
                 
                 # Marcar como terminado si no quedan unidades
-                if lote_obj.cantidad_existente <= 0:
-                    lote_obj.estado = 'Terminado'
+                if lote.cantidad_existente <= 0:
+                    lote.estado = 'Terminado'
+                    current_app.logger.info(f"Lote {lote.lote_id} marcado como terminado")
         
-        # Crear el pedido directamente en estado "en proceso"
+        # Crear el pedido en estado "en proceso"
+        current_app.logger.info("Creando nuevo pedido...")
         nuevo_pedido = PedidoGalletas(
             usuario_id=current_user.id,
             receta_id=receta_id,
-            cantidad=cantidad_ajustada,
+            cantidad=cantidad,
             estado_pedido_id=3,  # Estado "en proceso"
             fecha_pedido=datetime.now()
         )
         
         # Crear el registro de producción
+        current_app.logger.info("Creando registro de producción...")
         nueva_produccion = InformeProduccion(
             receta_id=receta_id,
-            cantidad_producida=cantidad_ajustada,
+            cantidad_producida=cantidad,
             fecha_produccion=datetime.now(),
             caducidad=datetime.now() + timedelta(weeks=7),  # 7 semanas de caducidad
-            cantidad_disponible=cantidad_ajustada
+            cantidad_disponible=cantidad
         )
         
         db.session.add(nuevo_pedido)
         db.session.add(nueva_produccion)
+        
+        current_app.logger.info("Guardando cambios en la base de datos...")
         db.session.commit()
         
+        current_app.logger.info("Producción iniciada correctamente")
         return jsonify({
             'success': True,
-            'message': 'Receta iniciada correctamente y se han restado los insumos del inventario',
+            'message': 'Producción iniciada correctamente',
             'pedido_id': nuevo_pedido.id,
-            'cantidad_ajustada': cantidad_ajustada
+            'cantidad': cantidad
         })
         
     except Exception as e:
         db.session.rollback()
-        print(f"Error al iniciar la receta: {str(e)}")
+        current_app.logger.error(f"Error al iniciar la producción: {str(e)}")
         return jsonify({
             'success': False,
-            'message': f'Error al iniciar la receta: {str(e)}'
+            'message': f'Error al iniciar la producción: {str(e)}'
         }), 500

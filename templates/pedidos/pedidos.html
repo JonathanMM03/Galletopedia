@@ -1,71 +1,304 @@
 {% extends "layoutIntranet.html" %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-choco text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Pedidos de Galletas</h5>
+<style>
+    :root {
+        --color-principal: #8B5E3B;
+        --color-secundario: #A67C52;
+        --color-fondo: #FFF8E8;
+        --color-texto: #5A3921;
+        --color-borde: #E0D5C8;
+        --color-destacado: #C9A37C;
+    }
+
+    .pedidos-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .pedidos-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 25px rgba(139, 94, 59, 0.1);
+        background-color: white;
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+        color: white;
+        padding: 1.25rem 1.5rem;
+        border-bottom: none;
+    }
+
+    .filter-badge {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+
+    .filter-btn {
+        background-color: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 0.35rem 0.75rem;
+        margin: 0 0.25rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+        background-color: white;
+        color: var(--color-principal);
+        border-color: white;
+    }
+
+    .table-custom {
+        margin-bottom: 0;
+    }
+
+    .table-custom thead th {
+        background-color: var(--color-principal);
+        color: white;
+        font-weight: 500;
+        padding: 1rem 1.25rem;
+        border-bottom: none;
+    }
+
+    .table-custom tbody td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        border-top: 1px solid var(--color-borde);
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: var(--color-fondo);
+    }
+
+    .badge-pedido {
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .badge-pieza {
+        background-color: #E3F2FD;
+        color: #1976D2;
+    }
+
+    .badge-caja {
+        background-color: #E8F5E9;
+        color: #388E3C;
+    }
+
+    .btn-action {
+        border-radius: 8px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-action i {
+        margin-right: 0.3rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-edit {
+        background-color: rgba(74, 111, 165, 0.1);
+        color: var(--color-principal);
+        border: 1px solid rgba(74, 111, 165, 0.2);
+    }
+
+    .btn-edit:hover {
+        background-color: rgba(74, 111, 165, 0.2);
+    }
+
+    .btn-cancel {
+        background-color: rgba(239, 83, 80, 0.1);
+        color: #EF5350;
+        border: 1px solid rgba(239, 83, 80, 0.2);
+    }
+
+    .btn-cancel:hover {
+        background-color: rgba(239, 83, 80, 0.2);
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--color-destacado);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: var(--color-texto);
+        font-size: 1.1rem;
+    }
+
+    .pagination-custom .page-item .page-link {
+        color: var(--color-principal);
+        border: 1px solid var(--color-borde);
+        margin: 0 0.25rem;
+        border-radius: 8px;
+    }
+
+    .pagination-custom .page-item.active .page-link {
+        background-color: var(--color-principal);
+        border-color: var(--color-principal);
+        color: white;
+    }
+
+    .pagination-custom .page-item.disabled .page-link {
+        color: #6c757d;
+    }
+
+    .card-footer-custom {
+        background-color: white;
+        border-top: 1px solid var(--color-borde);
+        padding: 1.25rem 1.5rem;
+    }
+
+    .status-badge {
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .status-pedido {
+        background-color: #E3F2FD;
+        color: #1976D2;
+    }
+
+    .status-preparacion {
+        background-color: #FFF3E0;
+        color: #FB8C00;
+    }
+
+    .status-listo {
+        background-color: #E8F5E9;
+        color: #388E3C;
+    }
+
+    .status-entregado {
+        background-color: #E8F5E9;
+        color: #388E3C;
+    }
+
+    .status-cancelado {
+        background-color: #FFEBEE;
+        color: #D32F2F;
+    }
+
+    .modal-header-custom {
+        background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+        color: white;
+        border-bottom: none;
+    }
+
+    .btn-modal-confirm {
+        background-color: var(--color-principal);
+        color: white;
+        border: none;
+    }
+
+    .btn-modal-confirm:hover {
+        background-color: var(--color-secundario);
+        color: white;
+    }
+</style>
+
+<div class="pedidos-container">
+    <div class="card pedidos-card">
+        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-cookie-bite me-2"></i>Pedidos de Galletas</h5>
             <div class="d-flex align-items-center">
-                <span class="badge bg-light text-dark me-2">
+                <span class="filter-badge me-3">
                     <i class="fas fa-filter me-1"></i> Filtros:
                 </span>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-light active" data-filter="todos">Todos</button>
-                    <button type="button" class="btn btn-sm btn-outline-light" data-filter="pendientes">Pendientes</button>
-                    <button type="button" class="btn btn-sm btn-outline-light" data-filter="entregados">Entregados</button>
-                    <button type="button" class="btn btn-sm btn-outline-light" data-filter="cancelados">Cancelados</button>
+                <div>
+                    <button type="button" class="filter-btn active" data-filter="todos">Todos</button>
+                    <button type="button" class="filter-btn" data-filter="pendientes">Pendientes</button>
+                    <button type="button" class="filter-btn" data-filter="entregados">Entregados</button>
+                    <button type="button" class="filter-btn" data-filter="cancelados">Cancelados</button>
                 </div>
             </div>
         </div>
+
         <div class="table-responsive">
-            <table class="table align-middle m-0" id="tablaPedidos">
-                <thead class="bg-choco text-white">
+            <table class="table table-custom table-hover" id="tablaPedidos">
+                <thead>
                     <tr>
                         <th>N° Pedido</th>
                         <th>Fecha Pedido</th>
-                        <th>Nombre</th>
+                        <th>Cliente</th>
                         <th>Receta</th>
                         <th>Cantidad</th>
                         <th>Unidad</th>
                         <th>Estado</th>
-                        <th>Fecha Entrega</th>
+                        <th>Entrega</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for pedido in pedidos %}
-                    <tr class="pedido-row {% if pedido.estado_pedido == 'Cancelado' %}table-danger{% elif pedido.estado_pedido == 'Entregado' %}table-success{% endif %}" 
-                        data-estado="{{ pedido.estatus }}">
-                        <td>N°{{ pedido.id }}</td>
+                    <tr class="pedido-row" data-estado="{{ pedido.estatus }}">
+                        <td class="fw-bold">#{{ pedido.id }}</td>
                         <td>{{ pedido.fecha_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td>{{ pedido.nombre_usuario }}</td>
                         <td>{{ pedido.nombre_receta }}</td>
                         <td>{{ pedido.cantidad }}</td>
                         <td>
                             {% if pedido.tipo_venta == 1 %}
-                            <span class="badge bg-primary">Pieza</span>
+                            <span class="badge badge-pieza">Pieza</span>
                             {% elif pedido.tipo_venta == 2 %}
-                            <span class="badge bg-info">Caja</span>
+                            <span class="badge badge-caja">Caja</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if pedido.estatus == 'pedido' %}
-                            <span class="badge bg-primary">Pedido</span>
+                            <span class="status-badge status-pedido">Pedido</span>
                             {% elif pedido.estatus == 'preparacion' %}
-                            <span class="badge bg-info">En preparación</span>
+                            <span class="status-badge status-preparacion">En preparación</span>
                             {% elif pedido.estatus == 'listo' %}
-                            <span class="badge bg-success">Listo</span>
+                            <span class="status-badge status-listo">Listo</span>
                             {% elif pedido.estatus == 'entregado' %}
-                            <span class="badge bg-success">Entregado</span>
+                            <span class="status-badge status-entregado">Entregado</span>
                             {% elif pedido.estatus == 'cancelado' %}
-                            <span class="badge bg-danger">Cancelado</span>
+                            <span class="status-badge status-cancelado">Cancelado</span>
                             {% else %}
-                            <span class="badge bg-secondary">{{ pedido.estatus }}</span>
+                            <span class="status-badge">{{ pedido.estatus }}</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if pedido.fecha_entrega %}
-                            <span class="badge bg-info">{{ pedido.fecha_entrega.strftime('%d/%m/%Y') }}</span>
+                            <span class="badge bg-light text-dark">{{ pedido.fecha_entrega.strftime('%d/%m/%Y')
+                                }}</span>
                             {% else %}
                             <span class="text-muted">Por definir</span>
                             {% endif %}
@@ -73,32 +306,33 @@
                         <td>
                             {% if pedido.estatus not in ['entregado', 'cancelado'] %}
                             <div class="d-flex gap-2">
-                                <form action="{{ url_for('pedidos.actualizar_pedido') }}" method="POST" class="d-inline flex-grow-1">
+                                <form action="{{ url_for('pedidos.actualizar_pedido') }}" method="POST"
+                                    class="d-inline">
                                     {{ form.hidden_tag() }}
                                     <input type="hidden" name="pedido_id" value="{{ pedido.id }}">
-                                    <div class="input-group input-group-sm">
-                                        {% if pedido.estatus == 'preparacion' %}
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalFecha({{ pedido.id }})">
-                                            <i class="fas fa-box me-1"></i> Preparado
-                                        </button>
+                                    {% if pedido.estatus == 'preparacion' %}
+                                    <button type="button" class="btn-action btn-edit"
+                                        onclick="abrirModalFecha({{ pedido.id }})">
+                                        <i class="fas fa-box"></i> Preparado
+                                    </button>
+                                    {% else %}
+                                    <button class="btn-action btn-edit" type="submit">
+                                        {% if pedido.estatus == 'pedido' %}
+                                        <i class="fas fa-check"></i> Atender
                                         {% else %}
-                                        <button class="btn btn-outline-primary btn-sm" type="submit">
-                                            {% if pedido.estatus == 'pedido' %}
-                                            <i class="fas fa-check me-1"></i> Atender
-                                            {% else %}
-                                            <i class="fas fa-truck me-1"></i> Entregar
-                                            {% endif %}
-                                        </button>
+                                        <i class="fas fa-truck"></i> Entregar
                                         {% endif %}
-                                    </div>
+                                    </button>
+                                    {% endif %}
                                 </form>
-                                <button type="button" class="btn btn-outline-danger btn-sm" 
-                                        onclick="cancelarPedido({{ pedido.id }})">
-                                    <i class="fas fa-times"></i>
+                                <button type="button" class="btn-action btn-cancel"
+                                    onclick="cancelarPedido({{ pedido.id }})">
+                                    <i class="fas fa-times"></i> Cancelar
                                 </button>
                             </div>
                             {% else %}
-                            <span class="badge {% if pedido.estatus == 'entregado' %}bg-success{% else %}bg-danger{% endif %}">
+                            <span
+                                class="badge {% if pedido.estatus == 'entregado' %}bg-success{% else %}bg-danger{% endif %}">
                                 {{ pedido.estatus|title }}
                             </span>
                             {% endif %}
@@ -106,27 +340,26 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <div class="text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3"></i>
-                                <p>No hay ningún pedido realizado.</p>
-                            </div>
+                        <td colspan="9" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No hay ningún pedido realizado.</p>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Controles de Paginación -->
         {% if pagination and pagination.pages > 1 %}
-        <div class="card-footer bg-white border-top-0">
+        <div class="card-footer card-footer-custom">
             <nav aria-label="Navegación de páginas">
-                <ul class="pagination justify-content-center mb-0">
+                <ul class="pagination pagination-custom justify-content-center mb-0">
                     <!-- Botón Anterior -->
                     {% if pagination.has_prev %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('pedidos.pedidos', page=pagination.prev_num) }}" aria-label="Anterior">
+                        <a class="page-link" href="{{ url_for('pedidos.pedidos', page=pagination.prev_num) }}"
+                            aria-label="Anterior">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -135,30 +368,32 @@
                         <span class="page-link" aria-hidden="true">&laquo;</span>
                     </li>
                     {% endif %}
-                    
+
                     <!-- Números de Página -->
-                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-                        {% if page_num %}
-                            {% if page_num == pagination.page %}
-                            <li class="page-item active">
-                                <span class="page-link">{{ page_num }}</span>
-                            </li>
-                            {% else %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('pedidos.pedidos', page=page_num) }}">{{ page_num }}</a>
-                            </li>
-                            {% endif %}
-                        {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link">...</span>
-                            </li>
-                        {% endif %}
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
+                    %}
+                    {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('pedidos.pedidos', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
                     {% endfor %}
-                    
+
                     <!-- Botón Siguiente -->
                     {% if pagination.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="{{ url_for('pedidos.pedidos', page=pagination.next_num) }}" aria-label="Siguiente">
+                        <a class="page-link" href="{{ url_for('pedidos.pedidos', page=pagination.next_num) }}"
+                            aria-label="Siguiente">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -181,7 +416,7 @@
 <div class="modal fade" id="modalCancelar" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header modal-header-custom">
                 <h5 class="modal-title">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Confirmar Cancelación
@@ -212,7 +447,7 @@
 <div class="modal fade" id="modalFechaEntrega" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header modal-header-custom">
                 <h5 class="modal-title">
                     <i class="fas fa-calendar-alt me-2"></i>
                     Asignar Fecha de Entrega
@@ -233,7 +468,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times me-1"></i> Cancelar
                     </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-modal-confirm">
                         <i class="fas fa-check me-1"></i> Confirmar y Marcar como Listo
                     </button>
                 </div>
@@ -245,43 +480,43 @@
 
 {% block scripts %}
 <script>
-function cancelarPedido(pedidoId) {
-    document.getElementById('pedidoIdCancelar').value = pedidoId;
-    new bootstrap.Modal(document.getElementById('modalCancelar')).show();
-}
+    function cancelarPedido(pedidoId) {
+        document.getElementById('pedidoIdCancelar').value = pedidoId;
+        new bootstrap.Modal(document.getElementById('modalCancelar')).show();
+    }
 
-function abrirModalFecha(pedidoId) {
-    document.getElementById('pedidoIdFecha').value = pedidoId;
-    new bootstrap.Modal(document.getElementById('modalFechaEntrega')).show();
-}
+    function abrirModalFecha(pedidoId) {
+        document.getElementById('pedidoIdFecha').value = pedidoId;
+        new bootstrap.Modal(document.getElementById('modalFechaEntrega')).show();
+    }
 
-// Filtrado de pedidos
-document.addEventListener('DOMContentLoaded', function() {
-    const filterButtons = document.querySelectorAll('[data-filter]');
-    const rows = document.querySelectorAll('.pedido-row');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-            
-            // Actualizar botones activos
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Filtrar filas
-            rows.forEach(row => {
-                if (filter === 'todos') {
-                    row.style.display = '';
-                } else if (filter === 'pendientes') {
-                    row.style.display = !['entregado', 'cancelado'].includes(row.getAttribute('data-estado')) ? '' : 'none';
-                } else if (filter === 'entregados') {
-                    row.style.display = row.getAttribute('data-estado') === 'entregado' ? '' : 'none';
-                } else if (filter === 'cancelados') {
-                    row.style.display = row.getAttribute('data-estado') === 'cancelado' ? '' : 'none';
-                }
+    // Filtrado de pedidos
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        const rows = document.querySelectorAll('.pedido-row');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const filter = this.getAttribute('data-filter');
+
+                // Actualizar botones activos
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Filtrar filas
+                rows.forEach(row => {
+                    if (filter === 'todos') {
+                        row.style.display = '';
+                    } else if (filter === 'pendientes') {
+                        row.style.display = !['entregado', 'cancelado'].includes(row.getAttribute('data-estado')) ? '' : 'none';
+                    } else if (filter === 'entregados') {
+                        row.style.display = row.getAttribute('data-estado') === 'entregado' ? '' : 'none';
+                    } else if (filter === 'cancelados') {
+                        row.style.display = row.getAttribute('data-estado') === 'cancelado' ? '' : 'none';
+                    }
+                });
             });
         });
     });
-});
 </script>
 {% endblock %}

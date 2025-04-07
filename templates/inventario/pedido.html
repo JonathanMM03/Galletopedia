@@ -5,23 +5,34 @@
 
 {% block styles %}
 <style>
+:root {
+    --color-principal: #A67C52;
+    --color-secundario: #8B5E3B;
+    --color-fondo: #F5DEB3;
+    --color-fondo-claro: #FFF8E8;
+    --color-texto: #5A3921;
+}
+
 .pedidos-container {
     padding: 20px;
+    background-color: var(--color-fondo-claro);
 }
 
 .pedido-card {
     border: none;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+    transition: all 0.3s ease;
     margin-bottom: 20px;
     overflow: hidden;
     background: white;
     padding: 20px;
+    border-left: 4px solid var(--color-principal);
 }
 
 .pedido-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(166, 124, 82, 0.2);
 }
 
 .status-icon {
@@ -29,6 +40,7 @@
     top: 10px;
     right: 10px;
     font-size: 1.5rem;
+    color: var(--color-secundario);
 }
 
 .info-row {
@@ -36,17 +48,24 @@
     justify-content: space-between;
     margin: 10px 0;
     padding: 5px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-fondo);
+}
+
+.info-row strong {
+    color: var(--color-secundario);
 }
 
 .modal-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+    background-color: var(--color-principal);
+    color: white;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
 }
 
 .modal-footer {
-    background-color: #f8f9fa;
-    border-top: 1px solid #dee2e6;
+    background-color: var(--color-fondo-claro);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
 }
 
 .btn-group {
@@ -56,19 +75,99 @@
 .btn-group .btn {
     flex: 1;
 }
+
+.btn-primary {
+    background-color: var(--color-principal);
+    border-color: var(--color-secundario);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-secundario);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    border-color: var(--color-principal);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-principal);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #218838;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #c82333;
+}
+
+h2 {
+    color: var(--color-secundario);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-principal);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: var(--color-texto);
+}
+
+.badge {
+    background-color: var(--color-fondo);
+    color: var(--color-secundario);
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.form-control:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+}
+
+.invalid-feedback {
+    color: #dc3545;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pedido-card {
+        padding: 15px;
+    }
+    
+    .info-row {
+        flex-direction: column;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid pedidos-container">
     <!-- Barra de navegación superior -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">Gestión de Pedidos</h2>
+                <h2 class="mb-0">
+                    <i class="bi bi-clipboard-check me-2"></i>Gestión de Pedidos
+                </h2>
                 <div>
                     <a href="{{ url_for('inventario.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-box me-1"></i>Volver a Inventario
+                        <i class="bi bi-box-arrow-left me-1"></i>Volver a Inventario
                     </a>
                 </div>
             </div>
@@ -85,59 +184,69 @@
 
 <!-- Modal para recibir pedido -->
 <div class="modal fade" id="modalRecibirPedido" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Recibir Pedido</h5>
+                <h5 class="modal-title"><i class="bi bi-box-seam me-2"></i>Recibir Pedido</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="formRecibirPedido">
+                <form id="formRecibirPedido" class="needs-validation" novalidate>
                     <input type="hidden" id="pedidoId" name="pedido_id">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
-                    <div class="mb-3">
-                        <label for="insumoNombre" class="form-label">Insumo</label>
-                        <input type="text" class="form-control" id="insumoNombre" readonly>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="proveedorNombre" class="form-label">Proveedor</label>
-                        <input type="text" class="form-control" id="proveedorNombre" readonly>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="cantidadRecibida" class="form-label">Cantidad Recibida</label>
-                        <input type="number" class="form-control" id="cantidadRecibida" name="cantidad_recibida" required min="0" step="0.01">
-                        <div class="invalid-feedback">
-                            La cantidad debe ser mayor a 0
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="insumoNombre" class="form-label">Insumo</label>
+                            <input type="text" class="form-control" id="insumoNombre" readonly>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="proveedorNombre" class="form-label">Proveedor</label>
+                            <input type="text" class="form-control" id="proveedorNombre" readonly>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="precioUnitario" class="form-label">Precio Unitario</label>
-                        <input type="number" class="form-control" id="precioUnitario" name="precio_unitario" required min="0" step="0.01">
-                        <div class="invalid-feedback">
-                            El precio debe ser mayor a 0
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cantidadRecibida" class="form-label">Cantidad Recibida</label>
+                            <input type="number" class="form-control" id="cantidadRecibida" name="cantidad_recibida" required min="0" step="0.01">
+                            <div class="invalid-feedback">
+                                La cantidad debe ser mayor a 0
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="precioUnitario" class="form-label">Precio Unitario</label>
+                            <input type="number" class="form-control" id="precioUnitario" name="precio_unitario" required min="0" step="0.01">
+                            <div class="invalid-feedback">
+                                El precio debe ser mayor a 0
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="fechaCaducidad" class="form-label">Fecha de Caducidad</label>
-                        <input type="date" class="form-control" id="fechaCaducidad" name="fecha_caducidad" required>
-                        <div class="invalid-feedback">
-                            La fecha de caducidad debe ser futura
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fechaCaducidad" class="form-label">Fecha de Caducidad</label>
+                            <input type="date" class="form-control" id="fechaCaducidad" name="fecha_caducidad" required>
+                            <div class="invalid-feedback">
+                                La fecha de caducidad debe ser futura
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="loteInsumo" class="form-label">Lote</label>
-                        <input type="text" class="form-control" id="loteInsumo" readonly>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="loteInsumo" class="form-label">Lote</label>
+                            <input type="text" class="form-control" id="loteInsumo" readonly>
+                        </div>
                     </div>
                     
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success">Recibir Pedido</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Recibir Pedido
+                        </button>
                     </div>
                 </form>
             </div>
@@ -150,7 +259,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Cancelar Pedido</h5>
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Cancelar Pedido</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -160,11 +269,13 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     
                     <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        ¿Está seguro de que desea cancelar este pedido?
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        ¿Está seguro de que desea cancelar este pedido? Esta acción no se puede deshacer.
                     </div>
                     
-                    <button type="submit" class="btn btn-danger w-100">Cancelar Pedido</button>
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-trash me-1"></i>Confirmar Cancelación
+                    </button>
                 </form>
             </div>
         </div>
@@ -331,4 +442,4 @@ document.getElementById('formCancelarPedido').addEventListener('submit', functio
     });
 });
 </script>
-{% endblock %} 
+{% endblock %}

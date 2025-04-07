@@ -2,14 +2,247 @@
 
 {% block title %}Gestión de Proveedores{% endblock %}
 
+{% block styles %}
+<style>
+:root {
+    --color-principal: #A67C52;
+    --color-secundario: #8B5E3B;
+    --color-fondo: #F5DEB3;
+    --color-fondo-claro: #FFF8E8;
+    --color-texto: #5A3921;
+}
+
+body {
+    background-color: var(--color-fondo-claro);
+    color: var(--color-texto);
+}
+
+h2 {
+    color: var(--color-secundario);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+h2::before {
+    content: "\F4CE";
+    font-family: "bootstrap-icons";
+    font-size: 1.5rem;
+}
+
+.card {
+    border-radius: 10px;
+    border: 1px solid rgba(166, 124, 82, 0.2);
+    box-shadow: 0 2px 15px rgba(166, 124, 82, 0.1);
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(166, 124, 82, 0.15);
+}
+
+.btn-primary {
+    background-color: var(--color-principal);
+    border-color: var(--color-secundario);
+    color: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-secundario);
+    border-color: var(--color-secundario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(166, 124, 82, 0.2);
+}
+
+.btn-primary i {
+    font-size: 1rem;
+}
+
+.btn-secondary {
+    background-color: var(--color-fondo);
+    border-color: var(--color-principal);
+    color: var(--color-secundario);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-principal);
+    border-color: var(--color-principal);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-warning, .btn-danger {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+}
+
+.btn-warning:hover, .btn-danger:hover {
+    transform: translateY(-2px);
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background-color: var(--color-principal);
+    color: white;
+    font-weight: 500;
+    border: none;
+    padding: 1rem;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: var(--color-fondo-claro);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(166, 124, 82, 0.1);
+    transform: translateY(-2px);
+}
+
+.table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--color-principal);
+    border-color: var(--color-secundario);
+}
+
+.pagination .page-link {
+    color: var(--color-secundario);
+    border-radius: 8px;
+    margin: 0 3px;
+    border: 1px solid rgba(166, 124, 82, 0.2);
+}
+
+.pagination .page-link:hover {
+    background-color: var(--color-fondo);
+}
+
+.modal-header {
+    background-color: var(--color-principal);
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 5px 25px rgba(166, 124, 82, 0.2);
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-title::before {
+    content: "\F4CE";
+    font-family: "bootstrap-icons";
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid rgba(166, 124, 82, 0.3);
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.2);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--color-secundario);
+}
+
+.text-center {
+    color: var(--color-secundario);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-responsive {
+        border-radius: 10px;
+        border: 1px solid rgba(166, 124, 82, 0.2);
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(166, 124, 82, 0.1);
+    }
+    
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid rgba(166, 124, 82, 0.1);
+    }
+    
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-secundario);
+        margin-right: 1rem;
+    }
+    
+    .table tbody td:last-child {
+        border-bottom: none;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h2>Gestión de Proveedores</h2>
     
     <!-- Botones de acción -->
-    <div class="mb-3">
+    <div class="mb-4">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoProveedorModal">
-            <i class="fas fa-plus"></i> Nuevo Proveedor
+            <i class="bi bi-plus-circle"></i> Nuevo Proveedor
         </button>
     </div>
 
@@ -19,62 +252,77 @@
             <form method="GET" class="row g-3">
                 <div class="col-md-8">
                     <label for="filtro_nombre" class="form-label">Nombre del Proveedor</label>
-                    <input type="text" class="form-control" id="filtro_nombre" name="filtro_nombre" value="{{ filtro_nombre }}" placeholder="Buscar por nombre...">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="filtro_nombre" name="filtro_nombre" value="{{ filtro_nombre }}" placeholder="Buscar por nombre...">
+                    </div>
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
-                    <a href="{{ url_for('inventario.proveedores') }}" class="btn btn-secondary">Limpiar</a>
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-funnel"></i> Filtrar
+                    </button>
+                    <a href="{{ url_for('inventario.proveedores') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </a>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Tabla de proveedores -->
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre de la Empresa</th>
-                    <th>Nombre del Promotor</th>
-                    <th>Teléfono</th>
-                    <th>Correo Electrónico</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for proveedor in proveedores %}
-                <tr>
-                    <td>{{ proveedor.id }}</td>
-                    <td>{{ proveedor.nombre_empresa }}</td>
-                    <td>{{ proveedor.nombre_promotor }}</td>
-                    <td>{{ proveedor.telefono }}</td>
-                    <td>{{ proveedor.correo_electronico }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning" onclick="editarProveedor({{ proveedor.id }})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarProveedor({{ proveedor.id }})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="6" class="text-center">No hay proveedores registrados</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-hash"></i> ID</th>
+                            <th><i class="bi bi-building"></i> Empresa</th>
+                            <th><i class="bi bi-person"></i> Promotor</th>
+                            <th><i class="bi bi-telephone"></i> Teléfono</th>
+                            <th><i class="bi bi-envelope"></i> Correo</th>
+                            <th><i class="bi bi-gear"></i> Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proveedor in proveedores %}
+                        <tr>
+                            <td>{{ proveedor.id }}</td>
+                            <td>{{ proveedor.nombre_empresa }}</td>
+                            <td>{{ proveedor.nombre_promotor }}</td>
+                            <td>{{ proveedor.telefono }}</td>
+                            <td>{{ proveedor.correo_electronico }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-warning" onclick="editarProveedor({{ proveedor.id }})" title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="eliminarProveedor({{ proveedor.id }})" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">No hay proveedores registrados</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Paginación -->
     {% if pagination.pages > 1 %}
-    <nav aria-label="Navegación de páginas">
+    <nav aria-label="Navegación de páginas" class="mt-4">
         <ul class="pagination justify-content-center">
             {% if pagination.has_prev %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('inventario.proveedores', page=pagination.prev_num, filtro_nombre=filtro_nombre) }}">Anterior</a>
+                <a class="page-link" href="{{ url_for('inventario.proveedores', page=pagination.prev_num, filtro_nombre=filtro_nombre) }}">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
             </li>
             {% endif %}
 
@@ -90,7 +338,9 @@
 
             {% if pagination.has_next %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for('inventario.proveedores', page=pagination.next_num, filtro_nombre=filtro_nombre) }}">Siguiente</a>
+                <a class="page-link" href="{{ url_for('inventario.proveedores', page=pagination.next_num, filtro_nombre=filtro_nombre) }}">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
             </li>
             {% endif %}
         </ul>
@@ -98,12 +348,14 @@
     {% endif %}
 
     <!-- Modal Nuevo Proveedor -->
-    <div class="modal fade" id="nuevoProveedorModal" tabindex="-1">
+    <div class="modal fade" id="nuevoProveedorModal" tabindex="-1" aria-labelledby="nuevoProveedorModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Nuevo Proveedor</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="nuevoProveedorModalLabel">
+                        <i class="bi bi-plus-circle me-2"></i>Nuevo Proveedor
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formNuevoProveedor" method="POST">
@@ -111,27 +363,43 @@
                         
                         <div class="mb-3">
                             <label for="nombre_empresa" class="form-label">Nombre de la Empresa</label>
-                            {{ form.nombre_empresa(class="form-control") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                {{ form.nombre_empresa(class="form-control", placeholder="Ej. Distribuidora S.A.") }}
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="nombre_promotor" class="form-label">Nombre del Promotor</label>
-                            {{ form.nombre_promotor(class="form-control") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                {{ form.nombre_promotor(class="form-control", placeholder="Ej. Juan Pérez") }}
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="telefono" class="form-label">Teléfono</label>
-                            {{ form.telefono(class="form-control") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                {{ form.telefono(class="form-control", placeholder="Ej. 555-1234567") }}
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="correo_electronico" class="form-label">Correo Electrónico</label>
-                            {{ form.correo_electronico(class="form-control") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                {{ form.correo_electronico(class="form-control", placeholder="Ej. contacto@proveedor.com") }}
+                            </div>
                         </div>
 
-                        <div class="text-end">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Guardar
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -146,32 +414,47 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Manejo del formulario de nuevo proveedor
     const formNuevoProveedor = document.getElementById('formNuevoProveedor');
-    formNuevoProveedor.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(formNuevoProveedor);
-        
-        fetch("{{ url_for('inventario.proveedores') }}", {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': "{{ csrf_token() }}"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.message);
-                window.location.reload();
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al procesar la solicitud');
+    if (formNuevoProveedor) {
+        formNuevoProveedor.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(formNuevoProveedor);
+            
+            fetch("{{ url_for('inventario.proveedores') }}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': "{{ csrf_token() }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar notificación de éxito
+                    const toast = new bootstrap.Toast(document.getElementById('toastSuccess'));
+                    document.getElementById('toastMessage').textContent = data.message;
+                    toast.show();
+                    
+                    // Cerrar modal y recargar después de 1.5 segundos
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('nuevoProveedorModal')).hide();
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    // Mostrar notificación de error
+                    const toast = new bootstrap.Toast(document.getElementById('toastError'));
+                    document.getElementById('errorMessage').textContent = data.message;
+                    toast.show();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const toast = new bootstrap.Toast(document.getElementById('toastError'));
+                document.getElementById('errorMessage').textContent = 'Error al procesar la solicitud';
+                toast.show();
+            });
         });
-    });
+    }
 });
 
 function editarProveedor(id) {
@@ -179,10 +462,81 @@ function editarProveedor(id) {
 }
 
 function eliminarProveedor(id) {
-    if (confirm('¿Está seguro de que desea eliminar este proveedor?')) {
-        // Implementar la lógica de eliminación
-        console.log('Eliminar proveedor:', id);
-    }
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        fetch("{{ url_for('inventario.eliminar_proveedor', id=0) }}".replace('0', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': "{{ csrf_token() }}",
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mostrar notificación de éxito
+                const toast = new bootstrap.Toast(document.getElementById('toastSuccess'));
+                document.getElementById('toastMessage').textContent = data.message;
+                toast.show();
+                
+                // Recargar después de 1.5 segundos
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                // Mostrar notificación de error
+                const toast = new bootstrap.Toast(document.getElementById('toastError'));
+                document.getElementById('errorMessage').textContent = data.message;
+                toast.show();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const toast = new bootstrap.Toast(document.getElementById('toastError'));
+            document.getElementById('errorMessage').textContent = 'Error al procesar la solicitud';
+            toast.show();
+        });
+    };
+    confirmModal.show();
 }
 </script>
-{% endblock %} 
+
+<!-- Toast de éxito -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="toastSuccess" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <strong class="me-auto">Éxito</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
+<!-- Toast de error -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="toastError" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <strong class="me-auto">Error</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="errorMessage"></div>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar Eliminación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar este proveedor? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

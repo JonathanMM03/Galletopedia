@@ -1,105 +1,175 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<main class="flex-grow-1 d-flex justify-content-center align-items-center">
-    <div class="card p-4 shadow-lg" style="width: 400px;">
-        <h3 class="text-center mb-4">Registro de Usuario</h3>
+<main class="flex-grow-1 d-flex justify-content-center align-items-center bg-beige-light py-5">
+    <div class="card p-4 border-0 shadow-lg rounded-3" style="width: 400px; border-top: 5px solid #A67C52;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-marron">Registro de Usuario</h3>
+            <p class="text-muted small">Crea tu cuenta para comenzar</p>
+        </div>
         
         <form action="{{ url_for('auth.registro') }}" method="POST" id="registroForm">
             {{ form.hidden_tag() }}
 
             <!-- Nombre -->
             <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre</label>
-                {{ form.nombre(class="form-control", id="nombre", required=true) }}
+                <label for="nombre" class="form-label fw-semibold text-marron">Nombre</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-beige text-marron"><i class="bi bi-person"></i></span>
+                    {{ form.nombre(class="form-control", id="nombre", required=true) }}
+                </div>
                 {% for error in form.nombre.errors %}
-                    <small class="text-danger">{{ error }}</small>
+                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
                 {% endfor %}
             </div>
 
             <!-- Email -->
             <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico</label>
-                {{ form.email(class="form-control", id="email", required=true) }}
+                <label for="email" class="form-label fw-semibold text-marron">Correo Electrónico</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-beige text-marron"><i class="bi bi-envelope"></i></span>
+                    {{ form.email(class="form-control", id="email", required=true) }}
+                </div>
                 {% for error in form.email.errors %}
-                    <small class="text-danger">{{ error }}</small>
+                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
                 {% endfor %}
             </div>
 
             <!-- Contraseña -->
             <div class="mb-3">
-                <label for="password" class="form-label">Contraseña</label>
-                {{ form.password(class="form-control", id="password", required=true) }}
+                <label for="password" class="form-label fw-semibold text-marron">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-beige text-marron"><i class="bi bi-lock"></i></span>
+                    {{ form.password(class="form-control", id="password", required=true) }}
+                </div>
                 {% for error in form.password.errors %}
-                    <small class="text-danger">{{ error }}</small>
+                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
                 {% endfor %}
             </div>
 
             <!-- Captcha -->
             <div class="mb-3">
-                <label for="captcha" class="form-label">Captcha</label>
+                <label for="captcha" class="form-label fw-semibold text-marron">Captcha</label>
                 <div class="d-flex align-items-center">
-                    <div class="captcha-container bg-light p-2 rounded me-2" id="captchaContainer" style="min-width: 120px; text-align: center; font-family: monospace; font-weight: bold; letter-spacing: 2px;">{{ form.captcha_hidden.data }}</div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshCaptcha">
+                    <div class="captcha-container bg-beige text-marron p-2 rounded me-2" id="captchaContainer" 
+                         style="min-width: 120px; text-align: center; font-family: monospace; font-weight: bold; letter-spacing: 2px;">
+                        {{ form.captcha_hidden.data }}
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-marron" id="refreshCaptcha">
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 </div>
                 {{ form.captcha(class="form-control mt-2", id="captcha", required=true, placeholder="Ingrese el código captcha") }}
                 {{ form.captcha_hidden(id="captchaHidden") }}
                 {% for error in form.captcha.errors %}
-                    <small class="text-danger">{{ error }}</small>
+                    <small class="text-danger d-block mt-1"><i class="bi bi-exclamation-circle"></i> {{ error }}</small>
                 {% endfor %}
             </div>
 
             <!-- Botón de Registro -->
             <div class="d-grid">
-                <button type="submit" class="btn btn-success w-100">Registrarse</button>
+                <button type="submit" class="btn btn-marron text-white fw-bold py-2">
+                    <i class="bi bi-person-plus me-2"></i>Registrarse
+                </button>
             </div>
 
             <!-- Link a Login -->
-            <div class="text-center mt-3">
-                <small>¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión aquí</a></small>
+            <div class="text-center mt-3 pt-3 border-top">
+                <small class="text-muted">¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}" class="text-marron fw-semibold">Inicia sesión aquí</a></small>
             </div>
         </form>
-
-        <!-- Mensajes Flash 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} mt-3" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}-->
     </div>
 </main>
 
+<style>
+    :root {
+        --color-marron: #A67C52;
+        --color-marron-oscuro: #8B5E3B;
+        --color-beige: #F5DEB3;
+        --color-beige-light: #FFF8E8;
+    }
+    
+    .bg-beige-light {
+        background-color: var(--color-beige-light);
+    }
+    
+    .bg-beige {
+        background-color: var(--color-beige);
+    }
+    
+    .text-marron {
+        color: var(--color-marron);
+    }
+    
+    .border-marron {
+        border-color: var(--color-marron) !important;
+    }
+    
+    .btn-marron {
+        background-color: var(--color-marron);
+        border-color: var(--color-marron);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-marron:hover {
+        background-color: var(--color-marron-oscuro);
+        border-color: var(--color-marron-oscuro);
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-marron {
+        color: var(--color-marron);
+        border-color: var(--color-marron);
+    }
+    
+    .btn-outline-marron:hover {
+        background-color: var(--color-marron);
+        color: white;
+    }
+    
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(166, 124, 82, 0.15) !important;
+    }
+    
+    .form-control:focus {
+        border-color: var(--color-marron);
+        box-shadow: 0 0 0 0.25rem rgba(166, 124, 82, 0.25);
+    }
+    
+    a {
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    a:hover {
+        color: var(--color-marron-oscuro);
+    }
+</style>
+
 {% block scripts %}
 <script>
-    // Función para refrescar el captcha
     function refreshCaptcha() {
-        // Hacer una petición AJAX para obtener un nuevo captcha
         fetch("{{ url_for('auth.registro') }}")
             .then(response => response.text())
             .then(html => {
-                // Extraer el nuevo captcha del HTML
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const newCaptcha = doc.getElementById('captchaHidden').value;
                 
-                // Actualizar el captcha en la página
                 document.getElementById('captchaContainer').textContent = newCaptcha;
                 document.getElementById('captchaHidden').value = newCaptcha;
-                document.getElementById('captcha').value = ''; // Limpiar el campo de entrada
+                document.getElementById('captcha').value = '';
             });
     }
 
-    // Inicializar cuando se carga la página
     document.addEventListener('DOMContentLoaded', function() {
-        // Agregar evento al botón de refrescar captcha
         document.getElementById('refreshCaptcha').addEventListener('click', refreshCaptcha);
     });
 </script>
 {% endblock %}
-{% endblock %} 
+{% endblock %}
